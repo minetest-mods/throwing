@@ -49,7 +49,11 @@ local function arrow_step(self, dtime)
 			return
 		end
 
-		self.on_hit(pos, self.last_pos, node, obj, minetest.get_player_by_name(self.player))
+		local player = minetest.get_player_by_name(self.player)
+		if not player then -- Possible if the player disconnected
+			return
+		end
+		self.on_hit(pos, self.last_pos, node, obj, player)
 		if self.on_hit_sound then
 			minetest.sound_play(self.on_hit_sound, {pos = pos, gain = 0.8})
 		end
