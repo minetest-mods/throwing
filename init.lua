@@ -9,7 +9,7 @@ local function shoot_arrow(itemstack, player)
 	for _,arrow in ipairs(throwing.arrows) do
 		if player:get_inventory():get_stack("main", player:get_wield_index()+1):get_name() == arrow then
 			if not minetest.setting_getbool("creative_mode") then
-				player:get_inventory():remove_item("main", arrow[1])
+				player:get_inventory():remove_item("main", arrow)
 			end
 			local playerpos = player:getpos()
 			local obj = minetest.add_entity({x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}, arrow.."_entity")
