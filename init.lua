@@ -35,15 +35,15 @@ local function arrow_step(self, dtime)
 	end
 
 	local hit = function(pos, node, obj)
-		self.object:remove()
-
 		if obj then
 			if obj:is_player() then
-				if self.timer > 0.2 and obj:get_playername() == self.player then -- Avoid hitting the hitter
+				if self.timer > 0.2 and obj:get_player_name() == self.player then -- Avoid hitting the hitter
 					return
 				end
 			end
 		end
+
+		self.object:remove()
 
 		if node and minetest.is_protected(pos, self.player) then -- Forbid hitting nodes in protected areas
 			return
