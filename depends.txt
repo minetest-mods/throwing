@@ -1,4 +1,2 @@
 default
-bucket
-fire
 farming
