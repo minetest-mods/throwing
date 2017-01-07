@@ -63,7 +63,7 @@ local function arrow_step(self, dtime)
 			if obj:get_luaentity() then
 				logging("collided with luaentity "..obj:get_luaentity().name.." at ("..pos.x..","..pos.y..","..pos.z..")")
 			elseif obj:is_player() then
-				logging("collided with player "..obj:get_playername().." at ("..pos.x..","..pos.y..","..pos.z..")")
+				logging("collided with player "..obj:get_player_name().." at ("..pos.x..","..pos.y..","..pos.z..")")
 			else
 				logging("collided with object at ("..pos.x..","..pos.y..","..pos.z..")")
 			end
