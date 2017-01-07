@@ -17,11 +17,11 @@ end
 if get_setting("arrow") then
 	throwing.register_arrow("arrow", "default:steel_ingot", 16, "Arrow",
 	  {"throwing_arrow.png", "throwing_arrow.png", "throwing_arrow_back.png", "throwing_arrow_front.png", "throwing_arrow_2.png", "throwing_arrow.png"}, "throwing_arrow",
-	  function(pos, _, _, object, _)
+	  function(pos, _, _, object, hitter)
 		if not object then
 			return
 		end
-		object:punch(minetest.get_player_by_name(hitter), 1, {
+		object:punch(hitter, 1, {
 			full_punch_interval = 1,
 			damage_groups = {fleshy = 3}
 		})
@@ -31,11 +31,11 @@ end
 if get_setting("golden_arrow") then
 	throwing.register_arrow("arrow_gold", "default:gold_ingot", 16, "Golden Arrow",
 	  {"throwing_arrow_gold.png", "throwing_arrow_gold.png", "throwing_arrow_gold_back.png", "throwing_arrow_gold_front.png", "throwing_arrow_gold_2.png", "throwing_arrow_gold.png"}, "throwing_arrow",
-	  function(pos, last_pos, node, object, hitter)
+	  function(pos, _, _, object, hitter)
 		if not object then
 			return
 		end
-		object:punch(minetest.get_player_by_name(hitter), 1, {
+		object:punch(hitter, 1, {
 			full_punch_interval = 1,
 			damage_groups = {fleshy = 5}
 		})
