@@ -16,7 +16,7 @@ local function shoot_arrow(itemstack, player)
 			local dir = player:get_look_dir()
 			obj:setvelocity({x=dir.x*19, y=dir.y*19, z=dir.z*19})
 			obj:setacceleration({x=dir.x*-3, y=-10, z=dir.z*-3})
-			obj:setyaw(player:get_look_yaw()+math.pi)
+			obj:setyaw(player:get_look_horizontal()-math.pi/2)
 			minetest.sound_play("throwing_sound", {pos=playerpos, gain = 0.5})
 			obj:get_luaentity().player = player:get_player_name()
 			return true
