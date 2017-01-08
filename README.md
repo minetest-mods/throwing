@@ -6,7 +6,7 @@ This mod is a new rewrite of the original throwing mod by PilzAdam. Compatible r
 
 ## Configuration
 
-The settings are the following (they all default to true):
+The settings are the following:
 ```
 throwing.enable_arrow = true
 throwing.enable_golden_arrow = true
@@ -15,6 +15,10 @@ throwing.enable_teleport_arrow = true
 throwing.enable_dig_arrow = true
 throwing.enable_dig_arrow_admin = true
 throwing.enable_build_arrow = true
+
+throwing.velocity_factor = 19
+throwing.horizontal_acceleration_factor = -3
+throwing.vertical_acceleration = -10
 ```
 
 ## API

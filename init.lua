@@ -14,8 +14,13 @@ local function shoot_arrow(itemstack, player)
 			local playerpos = player:getpos()
 			local obj = minetest.add_entity({x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}, arrow.."_entity")
 			local dir = player:get_look_dir()
-			obj:setvelocity({x=dir.x*19, y=dir.y*19, z=dir.z*19})
-			obj:setacceleration({x=dir.x*-3, y=-10, z=dir.z*-3})
+
+			local velocity_factor = tonumber(minetest.setting_get("throwing.velocity_factor")) or 19
+			local horizontal_acceleration_factor = tonumber(minetest.setting_get("throwing.horizontal_acceleration_factor")) or -3
+			local vertical_acceleration = tonumber(minetest.setting_get("throwing.vertical_acceleration")) or -10
+
+			obj:setvelocity({x=dir.x*velocity_factor, y=dir.y*velocity_factor, z=dir.z*velocity_factor})
+			obj:setacceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
 			obj:setyaw(player:get_look_horizontal()-math.pi/2)
 			minetest.sound_play("throwing_sound", {pos=playerpos, gain = 0.5})
 			obj:get_luaentity().player = player:get_player_name()
