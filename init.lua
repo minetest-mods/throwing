@@ -37,7 +37,7 @@ local function arrow_step(self, dtime)
 	local hit = function(pos, node, obj)
 		if obj then
 			if obj:is_player() then
-				if self.timer > 0.2 and obj:get_player_name() == self.player then -- Avoid hitting the hitter
+				if obj:get_player_name() == self.player then -- Avoid hitting the hitter
 					return
 				end
 			end
