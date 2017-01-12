@@ -19,6 +19,8 @@ throwing.enable_build_arrow = true
 throwing.velocity_factor = 19
 throwing.horizontal_acceleration_factor = -3
 throwing.vertical_acceleration = -10
+
+throwing.allow_arrow_placing = false
 ```
 
 ## API

@@ -109,8 +109,15 @@ No log message is needed in this function (a generic log message is automaticall
 function throwing.register_arrow(name, itemcraft, craft_quantity, description, tiles, on_hit_sound, on_hit, groups)
 	table.insert(throwing.arrows, modname..":"..name)
 
+	local _groups = {dig_immediate = 3}
+	if groups then
+		for k, v in pairs(groups) do
+			_groups[k] = v
+		end
+	end
 	minetest.register_node(modname..":"..name, {
 		drawtype = "nodebox",
+		paramtype = "light",
 		node_box = {
 			type = "fixed",
 			fixed = {
@@ -134,7 +141,22 @@ function throwing.register_arrow(name, itemcraft, craft_quantity, description, t
 		tiles = tiles,
 		inventory_image = tiles[1],
 		description = description,
-		groups = groups
+		groups = _groups,
+		on_place = function(itemstack, placer, pointed_thing)
+			if minetest.setting_getbool("throwing.allow_arrow_placing") and pointed_thing.above then
+				if not minetest.is_protected(pointed_thing.above) then
+					minetest.log("action", "Player "..placer:get_player_name().." placed arrow "..modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+					minetest.set_node(pointed_thing.above, {name = modname..":"..name})
+					itemstack:take_item()
+					return itemstack
+				else
+					minetest.log("warning", "Player "..placer:get_player_name().." tried to place arrow "..modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+					return itemstack
+				end
+			else
+				return itemstack
+			end
+		end
 	})
 
 	minetest.register_entity(modname..":"..name.."_entity", {
