@@ -49,7 +49,10 @@ if get_setting("dig_arrow") then
 		if not node then
 			return
 		end
-		minetest.dig_node(pos)
+		if minetest.is_protected(pos) then
+			return false, "Area is protected"
+		end
+		return minetest.dig_node(pos)
 	end)
 end
 
@@ -83,7 +86,7 @@ end
 if get_setting("fire_arrow") then
 	throwing.register_arrow("arrow_fire", "default:torch", 1, "Torch Arrow",
 	  {"throwing_arrow_fire.png", "throwing_arrow_fire.png", "throwing_arrow_fire_back.png", "throwing_arrow_fire_front.png", "throwing_arrow_fire_2.png", "throwing_arrow_fire.png"}, "default_place_node",
-	  function(_, last_pos, node, _, _)
+	  function(_, last_pos, node, _, hitter)
 		if not node then
 			return
 		end
@@ -91,7 +94,13 @@ if get_setting("fire_arrow") then
 			minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 			return
 		end
-		minetest.set_node(last_pos, {name="default:torch"})
+
+		local under_node_name = minetest.get_node({x = last_pos.x, y = last_pos.y-1, z = last_pos.z}).name
+		if under_node_name ~= "air" and name ~= "ignore" then
+			minetest.place_node(last_pos, {name="default:torch"})
+		else
+			return false, "Attached node default:torch can not be placed"
+		end
 	end)
 end
 
@@ -106,6 +115,9 @@ if get_setting("build_arrow") then
 			minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 			return
 		end
-		minetest.set_node(last_pos, {name="default:obsidian_glass"})
+		if minetest.is_protected(last_pos) then
+			return false, "Area is protected"
+		end
+		return minetest.place_node(last_pos, {name="default:obsidian_glass"})
 	end)
 end

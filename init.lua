@@ -2,7 +2,7 @@ throwing = {}
 
 throwing.arrows = {}
 
-local modname = minetest.get_current_modname()
+throwing.modname = minetest.get_current_modname()
 
 --------- Arrows functions ---------
 local function shoot_arrow(itemstack, player)
@@ -58,7 +58,19 @@ local function arrow_step(self, dtime)
 		if not player then -- Possible if the player disconnected
 			return
 		end
-		self.on_hit(pos, self.last_pos, node, obj, player)
+		local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player)
+		if ret == false then
+			if reason then
+				logging(": on_hit function failed for reason: "..reason, "warning")
+			else
+				logging(": on_hit function failed", "warning")
+			end
+
+			if not minetest.setting_getbool("creative_mode") then
+				player:get_inventory():add_item("main", self.node)
+			end
+		end
+
 		if self.on_hit_sound then
 			minetest.sound_play(self.on_hit_sound, {pos = pos, gain = 0.8})
 		end
@@ -105,9 +117,10 @@ end
 on_hit(pos, last_pos, node, object, hitter)
 Either node or object is nil, depending whether the arrow collided with an object (luaentity or player) or with a node.
 No log message is needed in this function (a generic log message is automatically emitted), except on error or warning.
+Should return false or false, reason on failure.
 ]]
 function throwing.register_arrow(name, itemcraft, craft_quantity, description, tiles, on_hit_sound, on_hit, groups)
-	table.insert(throwing.arrows, modname..":"..name)
+	table.insert(throwing.arrows, throwing.modname..":"..name)
 
 	local _groups = {dig_immediate = 3}
 	if groups then
@@ -115,7 +128,7 @@ function throwing.register_arrow(name, itemcraft, craft_quantity, description, t
 			_groups[k] = v
 		end
 	end
-	minetest.register_node(modname..":"..name, {
+	minetest.register_node(throwing.modname..":"..name, {
 		drawtype = "nodebox",
 		paramtype = "light",
 		node_box = {
@@ -145,12 +158,12 @@ function throwing.register_arrow(name, itemcraft, craft_quantity, description, t
 		on_place = function(itemstack, placer, pointed_thing)
 			if minetest.setting_getbool("throwing.allow_arrow_placing") and pointed_thing.above then
 				if not minetest.is_protected(pointed_thing.above) then
-					minetest.log("action", "Player "..placer:get_player_name().." placed arrow "..modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
-					minetest.set_node(pointed_thing.above, {name = modname..":"..name})
+					minetest.log("action", "Player "..placer:get_player_name().." placed arrow "..throwing.modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+					minetest.set_node(pointed_thing.above, {name = throwing.modname..":"..name})
 					itemstack:take_item()
 					return itemstack
 				else
-					minetest.log("warning", "Player "..placer:get_player_name().." tried to place arrow "..modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+					minetest.log("warning", "Player "..placer:get_player_name().." tried to place arrow "..throwing.modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
 					return itemstack
 				end
 			else
@@ -159,29 +172,29 @@ function throwing.register_arrow(name, itemcraft, craft_quantity, description, t
 		end
 	})
 
-	minetest.register_entity(modname..":"..name.."_entity", {
+	minetest.register_entity(throwing.modname..":"..name.."_entity", {
 		physical = false,
 		timer = 0,
 		visual = "wielditem",
 		visual_size = {x = 0.125, y = 0.125},
-		textures = {modname..":"..name},
+		textures = {throwing.modname..":"..name},
 		collisionbox = {0, 0, 0, 0, 0, 0},
 		on_hit = on_hit,
 		on_hit_sound = on_hit_sound,
-		node = modname..":"..name,
+		node = throwing.modname..":"..name,
 		player = "",
 		on_step = arrow_step
 	})
 
 	if itemcraft then
 		minetest.register_craft({
-			output = modname..":"..name.." "..craft_quantity,
+			output = throwing.modname..":"..name.." "..craft_quantity,
 			recipe = {
 				{itemcraft, "default:stick", "default:stick"}
 			}
 		})
 		minetest.register_craft({
-			output = modname..":"..name.." "..craft_quantity,
+			output = throwing.modname..":"..name.." "..craft_quantity,
 			recipe = {
 				{ "default:stick", "default:stick", itemcraft}
 			}
@@ -192,7 +205,7 @@ end
 
 ---------- Bows -----------
 function throwing.register_bow(name, itemcraft, description, texture, groups)
-	minetest.register_tool(modname..":"..name, {
+	minetest.register_tool(throwing.modname..":"..name, {
 		description = description,
 		inventory_image = texture,
 		on_use = function(itemstack, user, pointed_thing)
@@ -208,7 +221,7 @@ function throwing.register_bow(name, itemcraft, description, texture, groups)
 
 	if itemcraft then
 		minetest.register_craft({
-			output = modname..":"..name,
+			output = throwing.modname..":"..name,
 			recipe = {
 				{"farming:cotton", itemcraft, ""},
 				{"farming:cotton", "", itemcraft},
@@ -219,4 +232,4 @@ function throwing.register_bow(name, itemcraft, description, texture, groups)
 end
 
 
-dofile(minetest.get_modpath(modname).."/registration.lua")
+dofile(minetest.get_modpath(throwing.modname).."/registration.lua")

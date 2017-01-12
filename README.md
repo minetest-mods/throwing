@@ -54,6 +54,8 @@ On_hit: callback function: on_hit(pos, last_pos, node, object, hitter) where:
      whether the arrow hitted a node or an object (you should always check for that).
      An object can be a player or a luaentity.
    * Hitter: the ObjectRef of the player who throwed the arrow.
+   * When it fails, it should return:
+     false[, reason]
 ]]
 
 -- Examples:
@@ -74,6 +76,10 @@ function(pos, last_pos, node, object, hitter)
 	if not node then
 		return
 	end
-	minetest.set_node(last_pos, {name="default:obsidian_glass"})
+
+        if minetest.is_protected(last_pos) then
+                return false, "Area is protected"
+        end
+        return minetest.place_node(last_pos, {name="default:obsidian_glass"})
 end)
 ```
