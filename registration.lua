@@ -45,11 +45,11 @@ end
 if get_setting("dig_arrow") then
 	throwing.register_arrow("arrow_dig", "default:pick_wood", 1, "Dig Arrow",
 	  {"throwing_arrow_dig.png", "throwing_arrow_dig.png", "throwing_arrow_dig_back.png", "throwing_arrow_dig_front.png", "throwing_arrow_dig_2.png", "throwing_arrow_dig.png"}, "throwing_dig_arrow",
-	  function(pos, _, node, _, _)
+	  function(pos, _, node, _, hitter)
 		if not node then
 			return
 		end
-		if minetest.is_protected(pos) then
+		if minetest.is_protected(pos, hitter:get_player_name()) then
 			return false, "Area is protected"
 		end
 		return minetest.dig_node(pos)
@@ -107,7 +107,7 @@ end
 if get_setting("build_arrow") then
 	throwing.register_arrow("arrow_build", "default:obsidian_glass", 1, "Build Arrow",
 	  {"throwing_arrow_build.png", "throwing_arrow_build.png", "throwing_arrow_build_back.png", "throwing_arrow_build_front.png", "throwing_arrow_build_2.png", "throwing_arrow_build.png"}, "throwing_build_arrow",
-	  function(_, last_pos, node, _, _)
+	  function(_, last_pos, node, _, hitter)
 		if not node then
 			return
 		end
@@ -115,7 +115,7 @@ if get_setting("build_arrow") then
 			minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 			return
 		end
-		if minetest.is_protected(last_pos) then
+		if minetest.is_protected(last_pos, hitter:get_player_name()) then
 			return false, "Area is protected"
 		end
 		return minetest.place_node(last_pos, {name="default:obsidian_glass"})
