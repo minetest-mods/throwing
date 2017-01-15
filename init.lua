@@ -68,6 +68,7 @@ local function arrow_step(self, dtime)
 		end
 
 		if node and minetest.is_protected(pos, self.player) then -- Forbid hitting nodes in protected areas
+			minetest.record_protection_violation(pos, self.player)
 			logging("hitted a node into a protected area")
 			return
 		end
@@ -172,12 +173,13 @@ function throwing.register_arrow(name, itemcraft, craft_quantity, description, t
 			if minetest.setting_getbool("throwing.allow_arrow_placing") and pointed_thing.above then
 				local playername = placer:get_player_name()
 				if not minetest.is_protected(pointed_thing.above, playername) then
-					minetest.log("action", "Player "..playername.." placed arrow "..throwing.modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+					minetest.log("action", "Player "..playername.." placed arrow "..throwing.modname..":"..name.." at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
 					minetest.set_node(pointed_thing.above, {name = throwing.modname..":"..name})
 					itemstack:take_item()
 					return itemstack
 				else
 					minetest.log("warning", "Player "..playername.." tried to place arrow "..throwing.modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+					minetest.record_protection_violation(pointed_thing.above, playername)
 					return itemstack
 				end
 			else

@@ -112,6 +112,11 @@ if get_setting("build_arrow") then
 			minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 			return
 		end
+		local playername = hitter:get_player_name()
+		if minetest.is_protected(last_pos, playername) then
+			minetest.record_protection_violation(last_pos, playername)
+			return false, "protected position"
+		end
 		return minetest.place_node(last_pos, {name="default:obsidian_glass"})
 	end)
 end
