@@ -50,14 +50,27 @@ local function arrow_step(self, dtime)
 
 		self.object:remove()
 
-		if node and minetest.is_protected(pos, self.player) then -- Forbid hitting nodes in protected areas
-			return
-		end
-
 		local player = minetest.get_player_by_name(self.player)
 		if not player then -- Possible if the player disconnected
 			return
 		end
+
+		local function put_arrow_back()
+			if not minetest.setting_getbool("creative_mode") then
+				player:get_inventory():add_item("main", self.node)
+			end
+		end
+
+		if not self.last_pos then
+			logging(" hitted a node during its first call to the step function", "warning")
+			put_arrow_back()
+			return
+		end
+
+		if node and minetest.is_protected(pos, self.player) then -- Forbid hitting nodes in protected areas
+			return
+		end
+
 		local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player)
 		if ret == false then
 			if reason then
@@ -66,9 +79,8 @@ local function arrow_step(self, dtime)
 				logging(": on_hit function failed", "warning")
 			end
 
-			if not minetest.setting_getbool("creative_mode") then
-				player:get_inventory():add_item("main", self.node)
-			end
+			put_arrow_back()
+			return
 		end
 
 		if self.on_hit_sound then
