@@ -62,21 +62,22 @@ local function arrow_step(self, dtime)
 		end
 
 		if not self.last_pos then
-			logging(" hitted a node during its first call to the step function", "warning")
+			logging("hitted a node during its first call to the step function")
 			put_arrow_back()
 			return
 		end
 
 		if node and minetest.is_protected(pos, self.player) then -- Forbid hitting nodes in protected areas
+			logging("hitted a node into a protected area")
 			return
 		end
 
 		local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player)
 		if ret == false then
 			if reason then
-				logging(": on_hit function failed for reason: "..reason, "warning")
+				logging(": on_hit function failed for reason: "..reason)
 			else
-				logging(": on_hit function failed", "warning")
+				logging(": on_hit function failed")
 			end
 
 			put_arrow_back()
