@@ -49,9 +49,6 @@ if get_setting("dig_arrow") then
 		if not node then
 			return
 		end
-		if minetest.is_protected(pos, hitter:get_player_name()) then
-			return false, "Area is protected"
-		end
 		return minetest.dig_node(pos)
 	end)
 end
@@ -114,9 +111,6 @@ if get_setting("build_arrow") then
 		if minetest.get_node(last_pos).name ~= "air" then
 			minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 			return
-		end
-		if minetest.is_protected(last_pos, hitter:get_player_name()) then
-			return false, "Area is protected"
 		end
 		return minetest.place_node(last_pos, {name="default:obsidian_glass"})
 	end)
