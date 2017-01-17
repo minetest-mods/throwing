@@ -2,6 +2,10 @@ throwing = {}
 
 throwing.arrows = {}
 
+throwing.target_object = 1
+throwing.target_node = 2
+throwing.target_both = 3
+
 throwing.modname = minetest.get_current_modname()
 
 --------- Arrows functions ---------
@@ -29,7 +33,10 @@ local function shoot_arrow(itemstack, player)
 			obj:setvelocity({x=dir.x*velocity_factor, y=dir.y*velocity_factor, z=dir.z*velocity_factor})
 			obj:setacceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
 			obj:setyaw(player:get_look_horizontal()-math.pi/2)
-			minetest.sound_play("throwing_sound", {pos=playerpos, gain = 0.5})
+
+			if luaentity.on_throw_sound ~= "" then
+				minetest.sound_play(luaentity.on_throw_sound or "throwing_sound", {pos=playerpos, gain = 0.5})
+			end
 
 			if not minetest.setting_getbool("creative_mode") then
 				player:get_inventory():remove_item("main", arrow)
@@ -54,12 +61,10 @@ local function arrow_step(self, dtime)
 		if obj then
 			if obj:is_player() then
 				if obj:get_player_name() == self.player then -- Avoid hitting the hitter
-					return
+					return false
 				end
 			end
 		end
-
-		self.object:remove()
 
 		local player = minetest.get_player_by_name(self.player)
 		if not player then -- Possible if the player disconnected
@@ -118,7 +123,13 @@ local function arrow_step(self, dtime)
 		logging("reached ignore. Removing.")
 		return
 	elseif node.name ~= "air" then
-		hit(pos, node, nil)
+		if self.target ~= throwing.target_object then -- throwing.target_both, nil, throwing.target_node, or any invalid value
+			if hit(pos, node, nil) ~= false then
+				self.object:remove()
+			end
+		else
+			self.object:remove()
+		end
 		return
 	end
 
@@ -127,10 +138,22 @@ local function arrow_step(self, dtime)
 	for k, obj in pairs(objs) do
 		if obj:get_luaentity() then
 			if obj:get_luaentity().name ~= self.name and obj:get_luaentity().name ~= "__builtin:item" then
-				hit(pos, nil, obj)
+				if self.target ~= throwing.target_node then -- throwing.target_both, nil, throwing.target_object, or any invalid value
+					if hit(pos, nil, obj) ~= false then
+						self.object:remove()
+					end
+				else
+					self.object:remove()
+				end
 			end
 		else
-			hit(pos, nil, obj)
+			if self.target ~= throwing.target_node then -- throwing.target_both, nil, throwing.target_object, or any invalid value
+				if hit(pos, nil, obj) ~= false then
+					self.object:remove()
+				end
+			else
+				self.object:remove()
+			end
 		end
 	end
 
@@ -147,13 +170,13 @@ Should return false or false, reason on failure.
 on_throw(pos, hitter)
 Unlike on_hit, it is optional.
 ]]
-function throwing.register_arrow(name, itemcraft, craft_quantity, description, tiles, on_hit_sound, on_hit, on_throw, groups)
+function throwing.register_arrow(name, def)
 	table.insert(throwing.arrows, throwing.modname..":"..name)
 
-	local _groups = {dig_immediate = 3}
-	if groups then
-		for k, v in pairs(groups) do
-			_groups[k] = v
+	local groups = {dig_immediate = 3}
+	if def.groups then
+		for k, v in pairs(def.groups) do
+			groups[k] = v
 		end
 	end
 	minetest.register_node(throwing.modname..":"..name, {
@@ -179,10 +202,10 @@ function throwing.register_arrow(name, itemcraft, craft_quantity, description, t
 				{7.5/17, -2.5/17, -2.5/17, 8.5/17, -3.5/17, -3.5/17},
 			}
 		},
-		tiles = tiles,
-		inventory_image = tiles[1],
-		description = description,
-		groups = _groups,
+		tiles = def.tiles,
+		inventory_image = def.tiles[1],
+		description = def.description,
+		groups = groups,
 		on_place = function(itemstack, placer, pointed_thing)
 			if minetest.setting_getbool("throwing.allow_arrow_placing") and pointed_thing.above then
 				local playername = placer:get_player_name()
@@ -209,25 +232,27 @@ function throwing.register_arrow(name, itemcraft, craft_quantity, description, t
 		visual_size = {x = 0.125, y = 0.125},
 		textures = {throwing.modname..":"..name},
 		collisionbox = {0, 0, 0, 0, 0, 0},
-		on_hit = on_hit,
-		on_hit_sound = on_hit_sound,
-		on_throw = on_throw,
+		on_hit = def.on_hit,
+		on_hit_sound = def.on_hit_sound,
+		on_throw_sound = def.on_throw_sound,
+		on_throw = def.on_throw,
+		target = def.target,
 		node = throwing.modname..":"..name,
 		player = "",
 		on_step = arrow_step
 	})
 
-	if itemcraft then
+	if def.itemcraft then
 		minetest.register_craft({
-			output = throwing.modname..":"..name.." "..craft_quantity,
+			output = throwing.modname..":"..name.." "..tostring(def.craft_quantity or 1),
 			recipe = {
-				{itemcraft, "default:stick", "default:stick"}
+				{def.itemcraft, "default:stick", "default:stick"}
 			}
 		})
 		minetest.register_craft({
-			output = throwing.modname..":"..name.." "..craft_quantity,
+			output = throwing.modname..":"..name.." "..tostring(def.craft_quantity or 1),
 			recipe = {
-				{ "default:stick", "default:stick", itemcraft}
+				{ "default:stick", "default:stick", def.itemcraft}
 			}
 		})
 	end
@@ -235,10 +260,10 @@ end
 
 
 ---------- Bows -----------
-function throwing.register_bow(name, itemcraft, description, texture, groups)
+function throwing.register_bow(name, def)
 	minetest.register_tool(throwing.modname..":"..name, {
-		description = description,
-		inventory_image = texture,
+		description = def.description,
+		inventory_image = def.texture,
 		on_use = function(itemstack, user, pointed_thing)
 			if shoot_arrow(itemstack, user, pointed_thing) then
 				if not minetest.setting_getbool("creative_mode") then
@@ -247,16 +272,16 @@ function throwing.register_bow(name, itemcraft, description, texture, groups)
 			end
 			return itemstack
 		end,
-		groups = groups
+		groups = def.groups
 	})
 
-	if itemcraft then
+	if def.itemcraft then
 		minetest.register_craft({
 			output = throwing.modname..":"..name,
 			recipe = {
-				{"farming:cotton", itemcraft, ""},
-				{"farming:cotton", "", itemcraft},
-				{"farming:cotton", itemcraft, ""},
+				{"farming:cotton", def.itemcraft, ""},
+				{"farming:cotton", "", def.itemcraft},
+				{"farming:cotton", def.itemcraft, ""},
 			}
 		})
 	end
