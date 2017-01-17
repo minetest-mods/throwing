@@ -40,22 +40,28 @@ Groups: optional groups.
 throwing.register_bow("bow_stone", "default:cobble", "Stone Bow", "throwing_bow_stone.png")
 
 
-function throwing.register_arrow(name, itemcraft, craft_quantity, description, tiles, on_hit_sound, on_hit[, groups])
+function throwing.register_arrow(name, itemcraft, craft_quantity, description, tiles, on_hit_sound, on_hit[, on_throw[, groups]])
 --[[
 Name: Arrow name (in second part of the itemstring).
 Itemcraft: item used to craft the arrow (nil if uncraftable).
 Craft_quantity: quantity of arrows in the craft output.
 Tiles: tiles of the arrow.
 On_hit_sound: sound played when the arrow hits a node or an object (nil if no sound).
-On_hit: callback function: on_hit(pos, last_pos, node, object, hitter) where:
+On_hit: callback function: on_hit(pos, last_pos, node, object, hitter, self) where:
    * Pos: the position of the hitted node or object
    * Last_pos: the last air node where the arrow was (used by the build_arrow, for example)
-   * Node and object: hitted node or object. Either node or object is nil, depending
-     whether the arrow hitted a node or an object (you should always check for that).
+   * Node and object: hit node or object. Either node or object is nil, depending
+     whether the arrow hit a node or an object (you should always check for that).
      An object can be a player or a luaentity.
-   * Hitter: the ObjectRef of the player who throwed the arrow.
+   * Hitter: the ObjectRef of the player who threw the arrow.
+   * Self: the arrow entity table (it allows you to hack a lot!)
    * When it fails, it should return:
      false[, reason]
+On_throw: option callback function: on_throw(pos, thrower, self) where:
+   * Pos: the position from where the arrow is throw (which a bit higher than the hitter position)
+   * Thrower: the ObjectRef of the thrower
+   * Self: the arrow entity table
+   * Should return false if the arrow should not be throw
 ]]
 
 -- Examples:

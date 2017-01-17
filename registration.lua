@@ -61,7 +61,7 @@ if get_setting("dig_arrow_admin") then
 			return
 		end
 		minetest.remove_node(pos)
-	end, {not_in_creative_inventory = 1})
+	end, nil, {not_in_creative_inventory = 1})
 end
 
 if get_setting("teleport_arrow") then

@@ -8,13 +8,20 @@ throwing.modname = minetest.get_current_modname()
 local function shoot_arrow(itemstack, player)
 	for _,arrow in ipairs(throwing.arrows) do
 		if player:get_inventory():get_stack("main", player:get_wield_index()+1):get_name() == arrow then
-			if not minetest.setting_getbool("creative_mode") then
-				player:get_inventory():remove_item("main", arrow)
-			end
 			local playerpos = player:getpos()
-			local obj = minetest.add_entity({x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}, arrow.."_entity")
-			local dir = player:get_look_dir()
+			local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
+			local obj = minetest.add_entity(pos, arrow.."_entity")
 
+			local luaentity = obj:get_luaentity()
+			luaentity.player = player:get_player_name()
+
+			if luaentity.on_throw then
+				if luaentity.on_throw(pos, player, luaentity) == false then
+					return false
+				end
+			end
+
+			local dir = player:get_look_dir()
 			local velocity_factor = tonumber(minetest.setting_get("throwing.velocity_factor")) or 19
 			local horizontal_acceleration_factor = tonumber(minetest.setting_get("throwing.horizontal_acceleration_factor")) or -3
 			local vertical_acceleration = tonumber(minetest.setting_get("throwing.vertical_acceleration")) or -10
@@ -23,7 +30,11 @@ local function shoot_arrow(itemstack, player)
 			obj:setacceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
 			obj:setyaw(player:get_look_horizontal()-math.pi/2)
 			minetest.sound_play("throwing_sound", {pos=playerpos, gain = 0.5})
-			obj:get_luaentity().player = player:get_player_name()
+
+			if not minetest.setting_getbool("creative_mode") then
+				player:get_inventory():remove_item("main", arrow)
+			end
+
 			return true
 		end
 	end
@@ -73,7 +84,7 @@ local function arrow_step(self, dtime)
 			return
 		end
 
-		local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player)
+		local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player, self)
 		if ret == false then
 			if reason then
 				logging(": on_hit function failed for reason: "..reason)
@@ -132,8 +143,11 @@ on_hit(pos, last_pos, node, object, hitter)
 Either node or object is nil, depending whether the arrow collided with an object (luaentity or player) or with a node.
 No log message is needed in this function (a generic log message is automatically emitted), except on error or warning.
 Should return false or false, reason on failure.
+
+on_throw(pos, hitter)
+Unlike on_hit, it is optional.
 ]]
-function throwing.register_arrow(name, itemcraft, craft_quantity, description, tiles, on_hit_sound, on_hit, groups)
+function throwing.register_arrow(name, itemcraft, craft_quantity, description, tiles, on_hit_sound, on_hit, on_throw, groups)
 	table.insert(throwing.arrows, throwing.modname..":"..name)
 
 	local _groups = {dig_immediate = 3}
@@ -197,6 +211,7 @@ function throwing.register_arrow(name, itemcraft, craft_quantity, description, t
 		collisionbox = {0, 0, 0, 0, 0, 0},
 		on_hit = on_hit,
 		on_hit_sound = on_hit_sound,
+		on_throw = on_throw,
 		node = throwing.modname..":"..name,
 		player = "",
 		on_step = arrow_step
