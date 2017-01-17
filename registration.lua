@@ -156,3 +156,24 @@ if get_setting("build_arrow") then
 		end
 	})
 end
+
+if get_setting("drop_arrow") then
+	throwing.register_arrow("arrow_drop", {
+		itemcraft = "default:copper_ingot",
+		craft_quantity = 16,
+		description = "Drop Arrow",
+		tiles = {"throwing_arrow_drop.png", "throwing_arrow_drop.png", "throwing_arrow_drop_back.png", "throwing_arrow_drop_front.png", "throwing_arrow_drop_2.png", "throwing_arrow_drop.png"},
+		on_hit_sound = "throwing_build_arrow",
+		on_throw = function(_, thrower, next_index, data)
+			data.itemstack = thrower:get_inventory():get_stack("main", next_index)
+			data.index = next_index
+			thrower:get_inventory():set_stack("main", next_index, nil)
+		end,
+		on_hit = function(_, last_pos, _, _, hitter, data)
+			minetest.item_drop(ItemStack(data.itemstack), hitter, last_pos)
+		end,
+		on_hit_fails = function(_, thrower, data)
+			thrower:get_inventory():set_stack("main", data.index, data.itemstack)
+		end
+	})
+end
