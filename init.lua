@@ -10,8 +10,9 @@ throwing.modname = minetest.get_current_modname()
 
 --------- Arrows functions ---------
 local function shoot_arrow(itemstack, player)
+	local inventory = player:get_inventory()
 	for _,arrow in ipairs(throwing.arrows) do
-		if player:get_inventory():get_stack("main", player:get_wield_index()+1):get_name() == arrow then
+		if inventory:get_stack("main", player:get_wield_index()+1):get_name() == arrow then
 			local playerpos = player:getpos()
 			local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
 			local obj = minetest.add_entity(pos, arrow.."_entity")
@@ -20,7 +21,7 @@ local function shoot_arrow(itemstack, player)
 			luaentity.player = player:get_player_name()
 
 			if luaentity.on_throw then
-				if luaentity.on_throw(pos, player, luaentity) == false then
+				if luaentity.on_throw(pos, player, player:get_wield_index()+2, luaentity.data, luaentity) == false then
 					return false
 				end
 			end
@@ -39,7 +40,7 @@ local function shoot_arrow(itemstack, player)
 			end
 
 			if not minetest.setting_getbool("creative_mode") then
-				player:get_inventory():remove_item("main", arrow)
+				inventory:remove_item("main", arrow)
 			end
 
 			return true
@@ -71,15 +72,18 @@ local function arrow_step(self, dtime)
 			return
 		end
 
-		local function put_arrow_back()
+		local function hit_failed()
 			if not minetest.setting_getbool("creative_mode") then
 				player:get_inventory():add_item("main", self.node)
+			end
+			if self.on_hit_fails then
+				self.on_hit_fails(pos, player, self.data, self)
 			end
 		end
 
 		if not self.last_pos then
 			logging("hitted a node during its first call to the step function")
-			put_arrow_back()
+			hit_failed()
 			return
 		end
 
@@ -89,7 +93,7 @@ local function arrow_step(self, dtime)
 			return
 		end
 
-		local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player, self)
+		local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player, self.data, self)
 		if ret == false then
 			if reason then
 				logging(": on_hit function failed for reason: "..reason)
@@ -97,7 +101,7 @@ local function arrow_step(self, dtime)
 				logging(": on_hit function failed")
 			end
 
-			put_arrow_back()
+			hit_failed()
 			return
 		end
 
@@ -237,9 +241,11 @@ function throwing.register_arrow(name, def)
 		on_throw_sound = def.on_throw_sound,
 		on_throw = def.on_throw,
 		target = def.target,
+		on_hit_fails = def.on_hit_fails,
 		node = throwing.modname..":"..name,
 		player = "",
-		on_step = arrow_step
+		on_step = arrow_step,
+		data = {}
 	})
 
 	if def.itemcraft then
