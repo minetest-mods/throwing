@@ -21,7 +21,7 @@ local function shoot_arrow(itemstack, player)
 			luaentity.player = player:get_player_name()
 
 			if luaentity.on_throw then
-				if luaentity.on_throw(pos, player, player:get_wield_index()+2, luaentity.data, luaentity) == false then
+				if luaentity.on_throw(pos, player, ((player:get_wield_index()+1) % inventory:get_size("main")) + 1, luaentity.data, luaentity) == false then
 					return false
 				end
 			end
