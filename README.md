@@ -76,20 +76,18 @@ Definition: definition table, containing:
 ]]
 
 -- Example:
-if get_setting("arrow") then
-	throwing.register_arrow("arrow", {
-		itemcraft = "default:steel_ingot",
-		craft_quantity = 16,
-		description = "Arrow",
-		tiles = {"throwing_arrow.png", "throwing_arrow.png", "throwing_arrow_back.png", "throwing_arrow_front.png", "throwing_arrow_2.png", "throwing_arrow.png"},
-		target = throwing.target_object,
-		on_hit_sound = "throwing_arrow",
-		on_hit = function(pos, _, _, object, hitter)
-			object:punch(hitter, 1, {
-				full_punch_interval = 1,
-				damage_groups = {fleshy = 3}
-			})
-		end
-	})
-end
+throwing.register_arrow("arrow", {
+	itemcraft = "default:steel_ingot",
+	craft_quantity = 16,
+	description = "Arrow",
+	tiles = {"throwing_arrow.png", "throwing_arrow.png", "throwing_arrow_back.png", "throwing_arrow_front.png", "throwing_arrow_2.png", "throwing_arrow.png"},
+	target = throwing.target_object,
+	on_hit_sound = "throwing_arrow",
+	on_hit = function(pos, _, _, object, hitter)
+		object:punch(hitter, 1, {
+			full_punch_interval = 1,
+			damage_groups = {fleshy = 3}
+		})
+	end
+})
 ```
