@@ -88,7 +88,7 @@ local function arrow_step(self, dtime)
 			return
 		end
 
-		if node and minetest.is_protected(pos, self.player) then -- Forbid hitting nodes in protected areas
+		if node and minetest.is_protected(pos, self.player) and not self.allow_protected then -- Forbid hitting nodes in protected areas
 			minetest.record_protection_violation(pos, self.player)
 			logging("hitted a node into a protected area")
 			return
@@ -241,6 +241,7 @@ function throwing.register_arrow(name, def)
 		on_hit_sound = def.on_hit_sound,
 		on_throw_sound = def.on_throw_sound,
 		on_throw = def.on_throw,
+		allow_protected = def.allow_protected,
 		target = def.target,
 		on_hit_fails = def.on_hit_fails,
 		node = throwing.modname..":"..name,

@@ -21,6 +21,7 @@ throwing.horizontal_acceleration_factor = -3
 throwing.vertical_acceleration = -10
 
 throwing.allow_arrow_placing = false
+throwing.arrow_teleport_in_protected = true
 ```
 
 ## API
@@ -53,6 +54,7 @@ Definition: definition table, containing:
   * craft_quantity (optional, defaulting to 1 if itemcraft is non-nil, pointless otherwise): quantity of arrows in the craft output.
   * tiles (essential): tiles of the arrow.
   * target (optional, defaulting to throwing.target_both): what the arrow is able to hit (throwing.target_node, throwing.target_object, throwing.target_both).
+  * allow_protected (optional, defaulting to false): whether the arrow can be throw in a protected area
   * on_hit_sound (optional): sound played when the arrow hits a node or an object.
   * on_hit(pos, last_pos, node, object, hitter, data, self) (must exist, will crash if nil): callback function:
     - pos: the position of the hit node or object.

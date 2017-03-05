@@ -45,6 +45,7 @@ if get_setting("arrow") then
 		description = "Arrow",
 		tiles = {"throwing_arrow.png", "throwing_arrow.png", "throwing_arrow_back.png", "throwing_arrow_front.png", "throwing_arrow_2.png", "throwing_arrow.png"},
 		target = throwing.target_both,
+		allow_protected = true,
 		on_hit_sound = "throwing_arrow",
 		on_hit = function(pos, _, node, object, hitter)
 			if object then
@@ -68,6 +69,7 @@ if get_setting("golden_arrow") then
 		description = "Golden Arrow",
 		tiles = {"throwing_arrow_gold.png", "throwing_arrow_gold.png", "throwing_arrow_gold_back.png", "throwing_arrow_gold_front.png", "throwing_arrow_gold_2.png", "throwing_arrow_gold.png"},
 		target = throwing.target_object,
+		allow_protected = true,
 		on_hit_sound = "throwing_arrow",
 		on_hit = function(pos, _, _, object, hitter)
 			object:punch(hitter, 1, {
@@ -108,11 +110,16 @@ if get_setting("teleport_arrow") then
 		itemcraft = "default:diamond",
 		description = "Teleport Arrow",
 		tiles = {"throwing_arrow_teleport.png", "throwing_arrow_teleport.png", "throwing_arrow_teleport_back.png", "throwing_arrow_teleport_front.png", "throwing_arrow_teleport_2.png", "throwing_arrow_teleport.png"},
+		allow_protected = true,
 		on_hit_sound = "throwing_teleport_arrow",
 		on_hit = function(_, last_pos, _, _, hitter)
 			if minetest.get_node(last_pos).name ~= "air" then
 				minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 				return
+			end
+
+			if minetest.setting_getbool("throwing.allow_teleport_in_protected") == false then
+				return false
 			end
 
 			hitter:moveto(last_pos)
@@ -170,6 +177,7 @@ if get_setting("drop_arrow") then
 		description = "Drop Arrow",
 		tiles = {"throwing_arrow_drop.png", "throwing_arrow_drop.png", "throwing_arrow_drop_back.png", "throwing_arrow_drop_front.png", "throwing_arrow_drop_2.png", "throwing_arrow_drop.png"},
 		on_hit_sound = "throwing_build_arrow",
+		allow_protected = true,
 		on_throw = function(_, thrower, next_index, data)
 			data.itemstack = thrower:get_inventory():get_stack("main", next_index)
 			data.index = next_index
