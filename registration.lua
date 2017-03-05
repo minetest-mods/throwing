@@ -44,13 +44,19 @@ if get_setting("arrow") then
 		craft_quantity = 16,
 		description = "Arrow",
 		tiles = {"throwing_arrow.png", "throwing_arrow.png", "throwing_arrow_back.png", "throwing_arrow_front.png", "throwing_arrow_2.png", "throwing_arrow.png"},
-		target = throwing.target_object,
+		target = throwing.target_both,
 		on_hit_sound = "throwing_arrow",
-		on_hit = function(pos, _, _, object, hitter)
-			object:punch(hitter, 1, {
-				full_punch_interval = 1,
-				damage_groups = {fleshy = 3}
-			})
+		on_hit = function(pos, _, node, object, hitter)
+			if object then
+				object:punch(hitter, 1, {
+					full_punch_interval = 1,
+					damage_groups = {fleshy = 3}
+				})
+			elseif node then
+				if node.name == "mesecons_button:button_off" and minetest.get_modpath("mesecons_button") and minetest.get_modpath("mesecons") then
+					minetest.registered_items["mesecons_button:button_off"].on_rightclick(vector.round(pos), node)
+				end
+			end
 		end
 	})
 end
