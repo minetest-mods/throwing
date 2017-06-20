@@ -206,57 +206,53 @@ function throwing.register_arrow(name, def)
 
 	table.insert(throwing.arrows, name)
 
-	local groups = {dig_immediate = 3}
-	if def.groups then
-		for k, v in pairs(def.groups) do
-			groups[k] = v
-		end
+	if not def.groups then
+		def.groups = {}
 	end
-	minetest.register_node(name, {
-		drawtype = "nodebox",
-		paramtype = "light",
-		node_box = {
-			type = "fixed",
-			fixed = {
-				-- Shaft
-				{-6.5/17, -1.5/17, -1.5/17, 6.5/17, 1.5/17, 1.5/17},
-				-- Spitze
-				{-4.5/17, 2.5/17, 2.5/17, -3.5/17, -2.5/17, -2.5/17},
-				{-8.5/17, 0.5/17, 0.5/17, -6.5/17, -0.5/17, -0.5/17},
-				-- Federn
-				{6.5/17, 1.5/17, 1.5/17, 7.5/17, 2.5/17, 2.5/17},
-				{7.5/17, -2.5/17, 2.5/17, 6.5/17, -1.5/17, 1.5/17},
-				{7.5/17, 2.5/17, -2.5/17, 6.5/17, 1.5/17, -1.5/17},
-				{6.5/17, -1.5/17, -1.5/17, 7.5/17, -2.5/17, -2.5/17},
-
-				{7.5/17, 2.5/17, 2.5/17, 8.5/17, 3.5/17, 3.5/17},
-				{8.5/17, -3.5/17, 3.5/17, 7.5/17, -2.5/17, 2.5/17},
-				{8.5/17, 3.5/17, -3.5/17, 7.5/17, 2.5/17, -2.5/17},
-				{7.5/17, -2.5/17, -2.5/17, 8.5/17, -3.5/17, -3.5/17},
-			}
-		},
-		tiles = def.tiles,
-		inventory_image = def.tiles[1],
-		description = def.description,
-		groups = groups,
-		on_place = function(itemstack, placer, pointed_thing)
-			if minetest.setting_getbool("throwing.allow_arrow_placing") and pointed_thing.above then
-				local playername = placer:get_player_name()
-				if not minetest.is_protected(pointed_thing.above, playername) then
-					minetest.log("action", "Player "..playername.." placed arrow "..throwing.modname..":"..name.." at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
-					minetest.set_node(pointed_thing.above, {name = throwing.modname..":"..name})
-					itemstack:take_item()
-					return itemstack
-				else
-					minetest.log("warning", "Player "..playername.." tried to place arrow "..throwing.modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
-					minetest.record_protection_violation(pointed_thing.above, playername)
-					return itemstack
-				end
+	if not def.groups.dig_immediate then
+		def.groups.dig_immediate = 3
+	end
+	def.inventory_image = def.tiles[1]
+	def.on_place = function(itemstack, placer, pointed_thing)
+		if minetest.setting_getbool("throwing.allow_arrow_placing") and pointed_thing.above then
+			local playername = placer:get_player_name()
+			if not minetest.is_protected(pointed_thing.above, playername) then
+				minetest.log("action", "Player "..playername.." placed arrow "..throwing.modname..":"..name.." at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+				minetest.set_node(pointed_thing.above, {name = throwing.modname..":"..name})
+				itemstack:take_item()
+				return itemstack
 			else
+				minetest.log("warning", "Player "..playername.." tried to place arrow "..throwing.modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+				minetest.record_protection_violation(pointed_thing.above, playername)
 				return itemstack
 			end
+		else
+			return itemstack
 		end
-	})
+	end
+	def.drawtype = "nodebox"
+	def.paramtype = "light"
+	def.node_box = {
+		type = "fixed",
+		fixed = {
+			-- Shaft
+			{-6.5/17, -1.5/17, -1.5/17, 6.5/17, 1.5/17, 1.5/17},
+			-- Spitze
+			{-4.5/17, 2.5/17, 2.5/17, -3.5/17, -2.5/17, -2.5/17},
+			{-8.5/17, 0.5/17, 0.5/17, -6.5/17, -0.5/17, -0.5/17},
+			-- Federn
+			{6.5/17, 1.5/17, 1.5/17, 7.5/17, 2.5/17, 2.5/17},
+			{7.5/17, -2.5/17, 2.5/17, 6.5/17, -1.5/17, 1.5/17},
+			{7.5/17, 2.5/17, -2.5/17, 6.5/17, 1.5/17, -1.5/17},
+			{6.5/17, -1.5/17, -1.5/17, 7.5/17, -2.5/17, -2.5/17},
+
+			{7.5/17, 2.5/17, 2.5/17, 8.5/17, 3.5/17, 3.5/17},
+			{8.5/17, -3.5/17, 3.5/17, 7.5/17, -2.5/17, 2.5/17},
+			{8.5/17, 3.5/17, -3.5/17, 7.5/17, 2.5/17, -2.5/17},
+			{7.5/17, -2.5/17, -2.5/17, 8.5/17, -3.5/17, -3.5/17},
+		}
+	}
+	minetest.register_node(name, def)
 
 	minetest.register_entity(name.."_entity", {
 		physical = false,
@@ -306,29 +302,27 @@ function throwing.register_bow(name, def)
 			return throwing.is_arrow(itemstack)
 		end
 	end
-	minetest.register_tool(name, {
-		description = def.description,
-		inventory_image = def.texture,
-		on_use = function(itemstack, user, pointed_thing)
-			if not def.throw_itself and not def.allow_shot(user, user:get_inventory():get_stack("main", user:get_wield_index()+1)) then
-				return itemstack
-			end
-			if shoot_arrow(itemstack, user, def.throw_itself) then
-				if not minetest.setting_getbool("creative_mode") then
-					itemstack:add_wear(65535/30)
-				end
-			end
-			if def.throw_itself then
-				-- This is a bug. If we return ItemStack(nil), the player punches the entity,
-				-- and if the entity if a __builtin:item, it gets back to his inventory.
-				minetest.after(0.1, function()
-					user:get_inventory():remove_item("main", itemstack)
-				end)
-			end
+	def.inventory_image = def.texture
+	def.textre = nil
+	def.on_use = function(itemstack, user, pointed_thing)
+		if not def.throw_itself and not def.allow_shot(user, user:get_inventory():get_stack("main", user:get_wield_index()+1)) then
 			return itemstack
-		end,
-		groups = def.groups
-	})
+		end
+		if shoot_arrow(itemstack, user, def.throw_itself) then
+			if not minetest.setting_getbool("creative_mode") then
+				itemstack:add_wear(65535/30)
+			end
+		end
+		if def.throw_itself then
+			-- This is a bug. If we return ItemStack(nil), the player punches the entity,
+			-- and if the entity if a __builtin:item, it gets back to his inventory.
+			minetest.after(0.1, function()
+				user:get_inventory():remove_item("main", itemstack)
+			end)
+		end
+		return itemstack
+	end
+	minetest.register_tool(name, def)
 
 	if def.itemcraft then
 		minetest.register_craft({
