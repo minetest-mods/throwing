@@ -1,32 +1,44 @@
 throwing.register_bow("bow_wood", {
 	itemcraft = "default:wood",
 	description = "Wooden Bow",
-	texture = "throwing_bow_wood.png"
+	texture = "throwing_bow_wood.png",
+	uses = 50
 })
 throwing.register_bow("bow_stone", {
 	itemcraft = "default:cobble",
 	description = "Stone Bow",
-	texture = "throwing_bow_stone.png"
+	texture = "throwing_bow_stone.png",
+	uses = 100
 })
 throwing.register_bow("bow_steel", {
 	itemcraft = "default:steel_ingot",
 	description = "Steel Bow",
-	texture = "throwing_bow_steel.png"
+	texture = "throwing_bow_steel.png",
+	uses = 150
 })
 throwing.register_bow("bow_bronze", {
 	itemcraft = "default:bronze_ingot",
 	description = "Bronze Bow",
-	texture = "throwing_bow_bronze.png"
+	texture = "throwing_bow_bronze.png",
+	uses = 200
+})
+throwing.register_bow("bow_gold", {
+	itemcraft = "default:gold_ingot",
+	description = "Gold Bow",
+	texture = "throwing_bow_gold.png",
+	uses = 250
 })
 throwing.register_bow("bow_mese", {
 	itemcraft = "default:mese_crystal",
 	description = "Mese Bow",
-	texture = "throwing_bow_mese.png"
+	texture = "throwing_bow_mese.png",
+	uses = 300
 })
 throwing.register_bow("bow_diamond", {
 	itemcraft = "default:diamond",
 	description = "Diamond Bow",
-	texture = "throwing_bow_diamond.png"
+	texture = "throwing_bow_diamond.png",
+	uses = 320
 })
 
 local function get_setting(name)

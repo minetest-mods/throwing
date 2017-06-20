@@ -36,6 +36,7 @@ Definition: definition table, containing:
   * description (highly recommended): description of the bow.
   * texture (essential): texture of the bow, shown in inventory.
   * groups (optional): groups of the item.
+  * uses: number of uses of the bow (default is 50).
   * allow_shot (optional): function(player, itemstack):
     - player: the player using the bow
     - itemstack: the itemstack of the bow

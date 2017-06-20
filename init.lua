@@ -310,7 +310,7 @@ function throwing.register_bow(name, def)
 		end
 		if shoot_arrow(itemstack, user, def.throw_itself) then
 			if not minetest.setting_getbool("creative_mode") then
-				itemstack:add_wear(65535/30)
+				itemstack:add_wear(65535 / (def.uses or 50))
 			end
 		end
 		if def.throw_itself then
@@ -326,7 +326,7 @@ function throwing.register_bow(name, def)
 
 	if def.itemcraft then
 		minetest.register_craft({
-			output = throwing.modname..":"..name,
+			output = name,
 			recipe = {
 				{"farming:cotton", def.itemcraft, ""},
 				{"farming:cotton", "", def.itemcraft},
