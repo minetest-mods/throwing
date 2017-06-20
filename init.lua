@@ -225,12 +225,12 @@ function throwing.register_arrow(name, def)
 		if minetest.setting_getbool("throwing.allow_arrow_placing") and pointed_thing.above then
 			local playername = placer:get_player_name()
 			if not minetest.is_protected(pointed_thing.above, playername) then
-				minetest.log("action", "Player "..playername.." placed arrow "..throwing.modname..":"..name.." at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
-				minetest.set_node(pointed_thing.above, {name = throwing.modname..":"..name})
+				minetest.log("action", "Player "..playername.." placed arrow "..name.." at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+				minetest.set_node(pointed_thing.above, {name = name})
 				itemstack:take_item()
 				return itemstack
 			else
-				minetest.log("warning", "Player "..playername.." tried to place arrow "..throwing.modname..":"..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+				minetest.log("warning", "Player "..playername.." tried to place arrow "..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
 				minetest.record_protection_violation(pointed_thing.above, playername)
 				return itemstack
 			end
@@ -266,7 +266,7 @@ function throwing.register_arrow(name, def)
 		physical = false,
 		visual = "wielditem",
 		visual_size = {x = 0.125, y = 0.125},
-		textures = {throwing.modname..":"..name},
+		textures = {name},
 		collisionbox = {0, 0, 0, 0, 0, 0},
 		on_hit = def.on_hit,
 		on_hit_sound = def.on_hit_sound,
