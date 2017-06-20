@@ -18,9 +18,14 @@ function throwing.is_arrow(itemstack)
 	return false
 end
 
-local function shoot_arrow(itemstack, player)
+local function shoot_arrow(itemstack, player, throw_itself)
 	local inventory = player:get_inventory()
-	local arrow = inventory:get_stack("main", player:get_wield_index()+1):get_name()
+	local arrow
+	if throw_itself then
+		arrow = player:get_wielded_item():get_name()
+	else
+		arrow = inventory:get_stack("main", player:get_wield_index()+1):get_name()
+	end
 
 	local playerpos = player:getpos()
 	local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
@@ -61,7 +66,7 @@ local function shoot_arrow(itemstack, player)
 	end
 
 	if not minetest.setting_getbool("creative_mode") then
-		player:get_inventory():remove_item("main", arrow)
+		inventory:remove_item("main", arrow)
 	end
 
 	return true
@@ -305,13 +310,20 @@ function throwing.register_bow(name, def)
 		description = def.description,
 		inventory_image = def.texture,
 		on_use = function(itemstack, user, pointed_thing)
-			if not def.allow_shot(user, user:get_inventory():get_stack("main", user:get_wield_index()+1)) then
+			if not def.throw_itself and not def.allow_shot(user, user:get_inventory():get_stack("main", user:get_wield_index()+1)) then
 				return itemstack
 			end
-			if shoot_arrow(itemstack, user, pointed_thing) then
+			if shoot_arrow(itemstack, user, def.throw_itself) then
 				if not minetest.setting_getbool("creative_mode") then
 					itemstack:add_wear(65535/30)
 				end
+			end
+			if def.throw_itself then
+				-- This is a bug. If we return ItemStack(nil), the player punches the entity,
+				-- and if the entity if a __builtin:item, it gets back to his inventory.
+				minetest.after(0.1, function()
+					user:get_inventory():remove_item("main", itemstack)
+				end)
 			end
 			return itemstack
 		end,

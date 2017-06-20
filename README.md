@@ -41,6 +41,9 @@ Definition: definition table, containing:
     - itemstack: the itemstack of the bow
     - should return true if the shot can be made, and false otherwise
     - default for this is function(player, itemstack) return throwing.is_arrow(itemstack) end
+  * throw_itself (optional): whether the bow should throw itself instead of the arrow next to it in the inventory.
+    If present, allow_shot is ignored.
+    Default is false.
 ]]
 
 -- Example:
