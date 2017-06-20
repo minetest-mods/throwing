@@ -27,6 +27,12 @@ local function shoot_arrow(itemstack, player)
 	local obj
 	if throwing.is_arrow(arrow) then
 		obj = minetest.add_entity(pos, arrow.."_entity")
+	elseif minetest.registered_items[arrow].throwing_entity then
+		if type(minetest.registered_items[arrow].throwing_entity) == "string" then
+			obj = minetest.add_entity(pos, minetest.registered_items[arrow].throwing_entity)
+		else -- Type is a function
+			obj = minetest.registered_items[arrow].throwing_entity(pos, player)
+		end
 	else
 		obj = minetest.add_entity(pos, "__builtin:item", arrow)
 	end

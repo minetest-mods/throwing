@@ -98,3 +98,7 @@ throwing.register_arrow("arrow", {
 	end
 })
 ```
+
+If the item to throw is an arrow registered using `minetest.register_arrow`, the entity used will be the registered entity.
+Otherwise, if its definition contains a `throwing_entity` field, this field will be used as the entity name if it is a string, otherwise it will be called as a function(pos, player) that has to make the object to spawn and to return the corresponding ObjectRef.
+If the item is neither an arrow nor has any `throwing_entity` field, the corresponding `__builtin:item` will be used.
