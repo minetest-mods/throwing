@@ -78,7 +78,7 @@ local function arrow_step(self, dtime)
 	local node = minetest.get_node(pos)
 
 	local logging = function(message, level)
-		minetest.log(level or "action", "[throwing] Arrow "..self.node.." throwed by player "..self.player.." "..tostring(self.timer).."s ago "..message)
+		minetest.log(level or "action", "[throwing] Arrow "..self.item or self.name.." throwed by player "..self.player.." "..tostring(self.timer).."s ago "..message)
 	end
 
 	local hit = function(pos, node, obj)
@@ -96,8 +96,8 @@ local function arrow_step(self, dtime)
 		end
 
 		local function hit_failed()
-			if not minetest.setting_getbool("creative_mode") then
-				player:get_inventory():add_item("main", self.node)
+			if not minetest.setting_getbool("creative_mode") and self.item then
+				player:get_inventory():add_item("main", self.item)
 			end
 			if self.on_hit_fails then
 				self.on_hit_fails(pos, player, self.data, self)
@@ -190,6 +190,14 @@ local function arrow_step(self, dtime)
 	self.last_pos = pos -- Used by the build arrow
 end
 
+function throwing.make_arrow_def(def)
+	def.timer = 0
+	def.player = ""
+	def.on_step = arrow_step
+	def.data = {}
+	return def
+end
+
 --[[
 on_hit(pos, last_pos, node, object, hitter)
 Either node or object is nil, depending whether the arrow collided with an object (luaentity or player) or with a node.
@@ -254,9 +262,8 @@ function throwing.register_arrow(name, def)
 	}
 	minetest.register_node(name, def)
 
-	minetest.register_entity(name.."_entity", {
+	minetest.register_entity(name.."_entity", throwing.make_arrow_def{
 		physical = false,
-		timer = 0,
 		visual = "wielditem",
 		visual_size = {x = 0.125, y = 0.125},
 		textures = {throwing.modname..":"..name},
@@ -268,10 +275,7 @@ function throwing.register_arrow(name, def)
 		allow_protected = def.allow_protected,
 		target = def.target,
 		on_hit_fails = def.on_hit_fails,
-		node = throwing.modname..":"..name,
-		player = "",
-		on_step = arrow_step,
-		data = {}
+		item = name,
 	})
 
 	if def.itemcraft then
