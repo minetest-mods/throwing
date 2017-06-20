@@ -30,7 +30,7 @@ There are two available functions in the mod API:
 ```lua
 function throwing.register_bow(name, definition)
 --[[
-Name: Bow name (in second part of the itemstring).
+Name: Bow name. If it doesn't contain ":", the "throwing:" prefix will be added.
 Definition: definition table, containing:
   * itemcraft (optional, you may want to register your own craft or to make the bow uncraftable): item used to craft the bow.
   * description (highly recommended): description of the bow.
@@ -53,7 +53,7 @@ throwing.register_bow("bow_wood", {
 itemcraft, craft_quantity, description, tiles, on_hit_sound, on_hit[, on_throw[, groups]]
 function throwing.register_arrow(name, definition table)
 --[[
-Name: Arrow name (in second part of the itemstring).
+Name: Arrow name. If it doesn't contain ":", the "throwing:" prefix will be added.
 Definition: definition table, containing:
   * itemcraft (optional, you may want to register your own craft or to make the arrow uncraftable): item used to craft the arrow.
   * craft_quantity (optional, defaulting to 1 if itemcraft is non-nil, pointless otherwise): quantity of arrows in the craft output.

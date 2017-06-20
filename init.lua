@@ -187,7 +187,11 @@ on_throw(pos, hitter)
 Unlike on_hit, it is optional.
 ]]
 function throwing.register_arrow(name, def)
-	table.insert(throwing.arrows, throwing.modname..":"..name)
+	if not string.find(name, ":") then
+		name = throwing.modname..":"..name
+	end
+
+	table.insert(throwing.arrows, name)
 
 	local groups = {dig_immediate = 3}
 	if def.groups then
@@ -195,7 +199,7 @@ function throwing.register_arrow(name, def)
 			groups[k] = v
 		end
 	end
-	minetest.register_node(throwing.modname..":"..name, {
+	minetest.register_node(name, {
 		drawtype = "nodebox",
 		paramtype = "light",
 		node_box = {
@@ -241,7 +245,7 @@ function throwing.register_arrow(name, def)
 		end
 	})
 
-	minetest.register_entity(throwing.modname..":"..name.."_entity", {
+	minetest.register_entity(name.."_entity", {
 		physical = false,
 		timer = 0,
 		visual = "wielditem",
@@ -280,12 +284,16 @@ end
 
 ---------- Bows -----------
 function throwing.register_bow(name, def)
+	if not string.find(name, ":") then
+		name = throwing.modname..":"..name
+	end
+
 	if not def.allow_shot then
 		def.allow_shot = function(player, itemstack)
 			return throwing.is_arrow(itemstack)
 		end
 	end
-	minetest.register_tool(throwing.modname..":"..name, {
+	minetest.register_tool(name, {
 		description = def.description,
 		inventory_image = def.texture,
 		on_use = function(itemstack, user, pointed_thing)
