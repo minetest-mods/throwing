@@ -292,6 +292,8 @@ end
 
 
 ---------- Bows -----------
+local bow_cooldown = {}
+
 function throwing.register_bow(name, def)
 	if not string.find(name, ":") then
 		name = throwing.modname..":"..name
@@ -302,23 +304,39 @@ function throwing.register_bow(name, def)
 			return throwing.is_arrow(itemstack)
 		end
 	end
-	def.inventory_image = def.texture
-	def.textre = nil
+	if not def.inventory_image then
+		def.inventory_image = def.texture
+	end
 	def.on_use = function(itemstack, user, pointed_thing)
+		-- Cooldown
+		local meta = itemstack:get_meta()
+		local cooldown = def.cooldown or tonumber(minetest.settings:get("throwing.bow_cooldown")) or 0.2
+
+		if cooldown > 0 and meta:get_int("cooldown") > os.time() then
+			return
+		end
+
+		-- Throw itself?
 		if not def.throw_itself and not def.allow_shot(user, user:get_inventory():get_stack("main", user:get_wield_index()+1)) then
 			return itemstack
 		end
+
+		-- Shoot arrow
 		if shoot_arrow(itemstack, user, def.throw_itself) then
 			if not minetest.setting_getbool("creative_mode") then
 				itemstack:add_wear(65535 / (def.uses or 50))
 			end
 		end
+
+
 		if def.throw_itself then
 			-- This is a bug. If we return ItemStack(nil), the player punches the entity,
 			-- and if the entity if a __builtin:item, it gets back to his inventory.
 			minetest.after(0.1, function()
 				user:get_inventory():remove_item("main", itemstack)
 			end)
+		elseif cooldown > 0 then
+			meta:set_int("cooldown", os.time() + cooldown)
 		end
 		return itemstack
 	end

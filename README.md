@@ -22,6 +22,8 @@ throwing.vertical_acceleration = -10
 
 throwing.allow_arrow_placing = false
 throwing.arrow_teleport_in_protected = true
+
+throwing.bow_cooldown = 0.2
 ```
 
 ## API
@@ -45,6 +47,7 @@ Definition: definition table, containing:
   * throw_itself (optional): whether the bow should throw itself instead of the arrow next to it in the inventory.
     If present, allow_shot is ignored.
     Default is false.
+  * cooldown: bow cooldown. Default is setting throwing.bow_cooldown
 ]]
 
 -- Example:
