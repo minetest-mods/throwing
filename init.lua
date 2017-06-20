@@ -276,13 +276,13 @@ function throwing.register_arrow(name, def)
 
 	if def.itemcraft then
 		minetest.register_craft({
-			output = throwing.modname..":"..name.." "..tostring(def.craft_quantity or 1),
+			output = name.." "..tostring(def.craft_quantity or 1),
 			recipe = {
 				{def.itemcraft, "default:stick", "default:stick"}
 			}
 		})
 		minetest.register_craft({
-			output = throwing.modname..":"..name.." "..tostring(def.craft_quantity or 1),
+			output = name.." "..tostring(def.craft_quantity or 1),
 			recipe = {
 				{ "default:stick", "default:stick", def.itemcraft}
 			}
