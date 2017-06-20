@@ -36,6 +36,11 @@ Definition: definition table, containing:
   * description (highly recommended): description of the bow.
   * texture (essential): texture of the bow, shown in inventory.
   * groups (optional): groups of the item.
+  * allow_shot (optional): function(player, itemstack):
+    - player: the player using the bow
+    - itemstack: the itemstack of the bow
+    - should return true if the shot can be made, and false otherwise
+    - default for this is function(player, itemstack) return throwing.is_arrow(itemstack) end
 ]]
 
 -- Example:

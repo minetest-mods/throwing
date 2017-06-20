@@ -9,45 +9,56 @@ throwing.target_both = 3
 throwing.modname = minetest.get_current_modname()
 
 --------- Arrows functions ---------
-local function shoot_arrow(itemstack, player)
-	local inventory = player:get_inventory()
-	for _,arrow in ipairs(throwing.arrows) do
-		if inventory:get_stack("main", player:get_wield_index()+1):get_name() == arrow then
-			local playerpos = player:getpos()
-			local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
-			local obj = minetest.add_entity(pos, arrow.."_entity")
-
-			local luaentity = obj:get_luaentity()
-			luaentity.player = player:get_player_name()
-
-			if luaentity.on_throw then
-				if luaentity.on_throw(pos, player, ((player:get_wield_index()+1) % inventory:get_size("main")) + 1, luaentity.data, luaentity) == false then
-					obj:remove()
-					return false
-				end
-			end
-
-			local dir = player:get_look_dir()
-			local velocity_factor = tonumber(minetest.setting_get("throwing.velocity_factor")) or 19
-			local horizontal_acceleration_factor = tonumber(minetest.setting_get("throwing.horizontal_acceleration_factor")) or -3
-			local vertical_acceleration = tonumber(minetest.setting_get("throwing.vertical_acceleration")) or -10
-
-			obj:setvelocity({x=dir.x*velocity_factor, y=dir.y*velocity_factor, z=dir.z*velocity_factor})
-			obj:setacceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
-			obj:setyaw(player:get_look_horizontal()-math.pi/2)
-
-			if luaentity.on_throw_sound ~= "" then
-				minetest.sound_play(luaentity.on_throw_sound or "throwing_sound", {pos=playerpos, gain = 0.5})
-			end
-
-			if not minetest.setting_getbool("creative_mode") then
-				inventory:remove_item("main", arrow)
-			end
-
+function throwing.is_arrow(itemstack)
+	for _, arrow in ipairs(throwing.arrows) do
+		if (type(itemstack) == "string" and itemstack or itemstack:get_name()) == arrow then
 			return true
 		end
 	end
 	return false
+end
+
+local function shoot_arrow(itemstack, player)
+	local inventory = player:get_inventory()
+	local arrow = inventory:get_stack("main", player:get_wield_index()+1):get_name()
+
+	local playerpos = player:getpos()
+	local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
+	local obj
+	if throwing.is_arrow(arrow) then
+		obj = minetest.add_entity(pos, arrow.."_entity")
+	else
+		obj = minetest.add_entity(pos, "__builtin:item", arrow)
+	end
+
+	local luaentity = obj:get_luaentity()
+	luaentity.player = player:get_player_name()
+
+	if luaentity.on_throw then
+		if luaentity.on_throw(pos, player, ((player:get_wield_index()+1) % inventory:get_size("main")) + 1, luaentity.data, luaentity) == false then
+			obj:remove()
+			return false
+		end
+	end
+
+	local dir = player:get_look_dir()
+	local velocity_factor = tonumber(minetest.setting_get("throwing.velocity_factor")) or 19
+	local horizontal_acceleration_factor = tonumber(minetest.setting_get("throwing.horizontal_acceleration_factor")) or -3
+	local vertical_acceleration = tonumber(minetest.setting_get("throwing.vertical_acceleration")) or -10
+
+	obj:setvelocity({x=dir.x*velocity_factor, y=dir.y*velocity_factor, z=dir.z*velocity_factor})
+	obj:setacceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
+	obj:setyaw(player:get_look_horizontal()-math.pi/2)
+
+	if luaentity.on_throw_sound ~= "" then
+		minetest.sound_play(luaentity.on_throw_sound or "throwing_sound", {pos=playerpos, gain = 0.5})
+	end
+
+	if not minetest.setting_getbool("creative_mode") then
+		player:get_inventory():remove_item("main", arrow)
+	end
+
+	return true
 end
 
 local function arrow_step(self, dtime)
@@ -269,10 +280,18 @@ end
 
 ---------- Bows -----------
 function throwing.register_bow(name, def)
+	if not def.allow_shot then
+		def.allow_shot = function(player, itemstack)
+			return throwing.is_arrow(itemstack)
+		end
+	end
 	minetest.register_tool(throwing.modname..":"..name, {
 		description = def.description,
 		inventory_image = def.texture,
 		on_use = function(itemstack, user, pointed_thing)
+			if not def.allow_shot(user, user:get_inventory():get_stack("main", user:get_wield_index()+1)) then
+				return itemstack
+			end
 			if shoot_arrow(itemstack, user, pointed_thing) then
 				if not minetest.setting_getbool("creative_mode") then
 					itemstack:add_wear(65535/30)
