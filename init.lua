@@ -111,16 +111,18 @@ local function arrow_step(self, dtime)
 			return
 		end
 
-		local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player, self.data, self)
-		if ret == false then
-			if reason then
-				logging(": on_hit function failed for reason: "..reason)
-			else
-				logging(": on_hit function failed")
-			end
+		if self.on_hit then
+			local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player, self.data, self)
+			if ret == false then
+				if reason then
+					logging(": on_hit function failed for reason: "..reason)
+				else
+					logging(": on_hit function failed")
+				end
 
-			hit_failed()
-			return
+				hit_failed()
+				return
+			end
 		end
 
 		if self.on_hit_sound then

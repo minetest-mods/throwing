@@ -61,7 +61,7 @@ Definition: definition table, containing:
   * target (optional, defaulting to throwing.target_both): what the arrow is able to hit (throwing.target_node, throwing.target_object, throwing.target_both).
   * allow_protected (optional, defaulting to false): whether the arrow can be throw in a protected area
   * on_hit_sound (optional): sound played when the arrow hits a node or an object.
-  * on_hit(pos, last_pos, node, object, hitter, data, self) (must exist, will crash if nil): callback function:
+  * on_hit(pos, last_pos, node, object, hitter, data, self) (optional but very useful): callback function:
     - pos: the position of the hit node or object.
     - last_pos: the last air node where the arrow was
     - node and object: hit node or object. Either node or object is nil, depending
