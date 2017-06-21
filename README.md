@@ -48,6 +48,7 @@ Definition: definition table, containing:
     If present, allow_shot is ignored.
     Default is false.
   * cooldown: bow cooldown. Default is setting throwing.bow_cooldown
+  * function spawn_arrow_entity(position, arrow, player): defaults to throwing.spawn_arrow_entity
 ]]
 
 -- Example:

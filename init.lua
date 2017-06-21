@@ -18,6 +18,20 @@ function throwing.is_arrow(itemstack)
 	return false
 end
 
+function throwing.spawn_arrow_entity(pos, arrow, player)
+	if throwing.is_arrow(arrow) then
+		return minetest.add_entity(pos, arrow.."_entity")
+	elseif minetest.registered_items[arrow].throwing_entity then
+		if type(minetest.registered_items[arrow].throwing_entity) == "string" then
+			return minetest.add_entity(pos, minetest.registered_items[arrow].throwing_entity)
+		else -- Type is a function
+			return minetest.registered_items[arrow].throwing_entity(pos, player)
+		end
+	else
+		obj = minetest.add_entity(pos, "__builtin:item", arrow)
+	end
+end
+
 local function shoot_arrow(itemstack, player, throw_itself)
 	local inventory = player:get_inventory()
 	local arrow
@@ -29,18 +43,7 @@ local function shoot_arrow(itemstack, player, throw_itself)
 
 	local playerpos = player:getpos()
 	local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
-	local obj
-	if throwing.is_arrow(arrow) then
-		obj = minetest.add_entity(pos, arrow.."_entity")
-	elseif minetest.registered_items[arrow].throwing_entity then
-		if type(minetest.registered_items[arrow].throwing_entity) == "string" then
-			obj = minetest.add_entity(pos, minetest.registered_items[arrow].throwing_entity)
-		else -- Type is a function
-			obj = minetest.registered_items[arrow].throwing_entity(pos, player)
-		end
-	else
-		obj = minetest.add_entity(pos, "__builtin:item", arrow)
-	end
+	local obj = (minetest.registered_items[itemstack:get_name()].spawn_arrow_entity or throwing.spawn_arrow_entity)(pos, arrow, player)
 
 	local luaentity = obj:get_luaentity()
 	luaentity.player = player:get_player_name()
