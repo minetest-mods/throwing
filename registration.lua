@@ -59,7 +59,7 @@ if get_setting("arrow") then
 		target = throwing.target_both,
 		allow_protected = true,
 		on_hit_sound = "throwing_arrow",
-		on_hit = function(pos, _, node, object, hitter)
+		on_hit = function(self, pos, _, node, object, hitter)
 			if object then
 				object:punch(hitter, 1, {
 					full_punch_interval = 1,
@@ -83,7 +83,7 @@ if get_setting("golden_arrow") then
 		target = throwing.target_object,
 		allow_protected = true,
 		on_hit_sound = "throwing_arrow",
-		on_hit = function(pos, _, _, object, hitter)
+		on_hit = function(self, pos, _, _, object, hitter)
 			object:punch(hitter, 1, {
 				full_punch_interval = 1,
 				damage_groups = {fleshy = 5}
@@ -99,7 +99,7 @@ if get_setting("dig_arrow") then
 		tiles = {"throwing_arrow_dig.png", "throwing_arrow_dig.png", "throwing_arrow_dig_back.png", "throwing_arrow_dig_front.png", "throwing_arrow_dig_2.png", "throwing_arrow_dig.png"},
 		target = throwing.target_node,
 		on_hit_sound = "throwing_dig_arrow",
-		on_hit = function(pos, _, node, _, hitter)
+		on_hit = function(self, pos, _, node, _, hitter)
 			return minetest.dig_node(pos)
 		end
 	})
@@ -110,7 +110,7 @@ if get_setting("dig_arrow_admin") then
 		description = "Admin Dig Arrow",
 		tiles = {"throwing_arrow_dig.png", "throwing_arrow_dig.png", "throwing_arrow_dig_back.png", "throwing_arrow_dig_front.png", "throwing_arrow_dig_2.png", "throwing_arrow_dig.png"},
 		target = throwing.target_node,
-		on_hit = function(pos, _, node, _, _)
+		on_hit = function(self, pos, _, node, _, _)
 			minetest.remove_node(pos)
 		end,
 		groups = {not_in_creative_inventory = 1}
@@ -124,7 +124,7 @@ if get_setting("teleport_arrow") then
 		tiles = {"throwing_arrow_teleport.png", "throwing_arrow_teleport.png", "throwing_arrow_teleport_back.png", "throwing_arrow_teleport_front.png", "throwing_arrow_teleport_2.png", "throwing_arrow_teleport.png"},
 		allow_protected = true,
 		on_hit_sound = "throwing_teleport_arrow",
-		on_hit = function(_, last_pos, _, _, hitter)
+		on_hit = function(self, _, last_pos, _, _, hitter)
 			if minetest.get_node(last_pos).name ~= "air" then
 				minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 				return
@@ -145,7 +145,7 @@ if get_setting("fire_arrow") then
 		description = "Torch Arrow",
 		tiles = {"throwing_arrow_fire.png", "throwing_arrow_fire.png", "throwing_arrow_fire_back.png", "throwing_arrow_fire_front.png", "throwing_arrow_fire_2.png", "throwing_arrow_fire.png"},
 		on_hit_sound = "default_place_node",
-		on_hit = function(pos, last_pos, _, _, hitter)
+		on_hit = function(self, pos, last_pos, _, _, hitter)
 			if minetest.get_node(last_pos).name ~= "air" then
 				minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 				return
@@ -173,7 +173,7 @@ if get_setting("build_arrow") then
 		description = "Build Arrow",
 		tiles = {"throwing_arrow_build.png", "throwing_arrow_build.png", "throwing_arrow_build_back.png", "throwing_arrow_build_front.png", "throwing_arrow_build_2.png", "throwing_arrow_build.png"},
 		on_hit_sound = "throwing_build_arrow",
-		on_hit = function(_, last_pos, _, _, hitter)
+		on_hit = function(self, _, last_pos, _, _, hitter)
 			if minetest.get_node(last_pos).name ~= "air" then
 				minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 				return
@@ -196,12 +196,16 @@ if get_setting("drop_arrow") then
 		tiles = {"throwing_arrow_drop.png", "throwing_arrow_drop.png", "throwing_arrow_drop_back.png", "throwing_arrow_drop_front.png", "throwing_arrow_drop_2.png", "throwing_arrow_drop.png"},
 		on_hit_sound = "throwing_build_arrow",
 		allow_protected = true,
-		on_throw = function(_, thrower, next_index, data)
-			data.itemstack = thrower:get_inventory():get_stack("main", next_index)
-			data.index = next_index
-			thrower:get_inventory():set_stack("main", next_index, nil)
+		on_throw = function(self, _, thrower, _, index, data)
+			local inventory = thrower:get_inventory()
+			if index >= inventory:get_size("main") or inventory:get_stack("main", index+1):get_name() == "" then
+				return false, "nothing to drop"
+			end
+			data.itemstack = inventory:get_stack("main", index+1)
+			data.index = index+1
+			thrower:get_inventory():set_stack("main", index+1, nil)
 		end,
-		on_hit = function(_, last_pos, _, _, hitter, data)
+		on_hit = function(self, _, last_pos, _, _, hitter, data)
 			minetest.item_drop(ItemStack(data.itemstack), hitter, last_pos)
 		end,
 		on_hit_fails = function(_, thrower, data)

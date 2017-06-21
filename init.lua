@@ -32,14 +32,17 @@ function throwing.spawn_arrow_entity(pos, arrow, player)
 	end
 end
 
-local function shoot_arrow(itemstack, player, throw_itself)
+local function shoot_arrow(itemstack, player, throw_itself, new_stack)
 	local inventory = player:get_inventory()
-	local arrow
-	if throw_itself then
-		arrow = player:get_wielded_item():get_name()
-	else
-		arrow = inventory:get_stack("main", player:get_wield_index()+1):get_name()
+	local index = player:get_wield_index()
+	if not throw_itself then
+		if index >= player:get_inventory():get_size("main") then
+			return false
+		end
+		index = index + 1
 	end
+	local arrow_stack = inventory:get_stack("main", index)
+	local arrow = arrow_stack:get_name()
 
 	local playerpos = player:getpos()
 	local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
@@ -52,7 +55,7 @@ local function shoot_arrow(itemstack, player, throw_itself)
 	end
 
 	if luaentity.on_throw then
-		if luaentity.on_throw(pos, player, ((player:get_wield_index()+1) % inventory:get_size("main")) + 1, luaentity.data, luaentity) == false then
+		if luaentity:on_throw(pos, player, arrow_stack, index, luaentity.data) == false then
 			obj:remove()
 			return false
 		end
@@ -72,7 +75,13 @@ local function shoot_arrow(itemstack, player, throw_itself)
 	end
 
 	if not minetest.setting_getbool("creative_mode") then
-		inventory:remove_item("main", arrow)
+		if new_stack then
+			inventory:set_stack("main", index, new_stack)
+		else
+			local stack = inventory:get_stack("main", index)
+			stack:take_item()
+			inventory:set_stack("main", index, stack)
+		end
 	end
 
 	return true
@@ -106,7 +115,7 @@ local function arrow_step(self, dtime)
 				player:get_inventory():add_item("main", self.item)
 			end
 			if self.on_hit_fails then
-				self.on_hit_fails(pos, player, self.data, self)
+				self:on_hit_fails(pos, player, self.data)
 			end
 		end
 
@@ -123,7 +132,7 @@ local function arrow_step(self, dtime)
 		end
 
 		if self.on_hit then
-			local ret, reason = self.on_hit(pos, self.last_pos, node, obj, player, self.data, self)
+			local ret, reason = self:on_hit(pos, self.last_pos, node, obj, player, self.data)
 			if ret == false then
 				if reason then
 					logging(": on_hit function failed for reason: "..reason)
@@ -310,7 +319,10 @@ function throwing.register_bow(name, def)
 	end
 
 	if not def.allow_shot then
-		def.allow_shot = function(player, itemstack)
+		def.allow_shot = function(player, itemstack, index)
+			if index >= player:get_inventory():get_size("main") and not def.throw_itself then
+				return false
+			end
 			return throwing.is_arrow(itemstack)
 		end
 	end
@@ -326,13 +338,15 @@ function throwing.register_bow(name, def)
 			return
 		end
 
+		local index = (def.throw_itself and user:get_wield_index()) or user:get_wield_index()+1
+		local res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", index), index)
 		-- Throw itself?
-		if not def.throw_itself and not def.allow_shot(user, user:get_inventory():get_stack("main", user:get_wield_index()+1)) then
-			return itemstack
+		if not res then
+			return new_stack or itemstack
 		end
 
 		-- Shoot arrow
-		if shoot_arrow(itemstack, user, def.throw_itself) then
+		if shoot_arrow(itemstack, user, def.throw_itself, new_stack) then
 			if not minetest.setting_getbool("creative_mode") then
 				itemstack:add_wear(65535 / (def.uses or 50))
 			end

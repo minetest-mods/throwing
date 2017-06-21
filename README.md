@@ -39,11 +39,12 @@ Definition: definition table, containing:
   * texture (essential): texture of the bow, shown in inventory.
   * groups (optional): groups of the item.
   * uses: number of uses of the bow (default is 50).
-  * allow_shot (optional): function(player, itemstack):
+  * allow_shot (optional): function(player, itemstack, index):
     - player: the player using the bow
     - itemstack: the itemstack of the bow
     - should return true if the shot can be made, and false otherwise
-    - default for this is function(player, itemstack) return throwing.is_arrow(itemstack) end
+    - the default function checks that the arrow to be thrown is a registered arrow
+    - it can return a second return value, which is the new itemstack
   * throw_itself (optional): whether the bow should throw itself instead of the arrow next to it in the inventory.
     If present, allow_shot is ignored.
     Default is false.
@@ -69,7 +70,7 @@ Definition: definition table, containing:
   * target (optional, defaulting to throwing.target_both): what the arrow is able to hit (throwing.target_node, throwing.target_object, throwing.target_both).
   * allow_protected (optional, defaulting to false): whether the arrow can be throw in a protected area
   * on_hit_sound (optional): sound played when the arrow hits a node or an object.
-  * on_hit(pos, last_pos, node, object, hitter, data, self) (optional but very useful): callback function:
+  * on_hit(self, pos, last_pos, node, object, hitter, data) (optional but very useful): callback function:
     - pos: the position of the hit node or object.
     - last_pos: the last air node where the arrow was
     - node and object: hit node or object. Either node or object is nil, depending
@@ -79,15 +80,15 @@ Definition: definition table, containing:
     - self: the arrow entity table (it allows you to hack a lot!)
     - If it fails, it should return:
       false[, reason]
-  * on_throw(pos, thrower, next_index, data, self) (optional): callback function: on_throw:
+  * on_throw(self, pos, thrower, itemstack, index, data) (optional): callback function: on_throw:
     - pos: the position from where the arrow is throw (which a bit higher than the hitter position)
     - thrower: an ObjectRef to the thrower player
     - next_index: the index next to the arrow in the "main" inventory
     - data: a data table associated to the entity where you can store what you want
     - self: the arrow entity table
-    - If the arrow shouldn't be throw, it should return false.
+    - If the arrow shouldn't be thrown, it should return false.
   * on_throw_sound (optional, there is a default sound, specify "" for no sound): sound to be played when the arrow is throw
-  * on_hit_fails(pos, thrower, data, self) (optional): callback function called if the hit failed (e.g. because on_hit returned false or because the area was protected)
+  * on_hit_fails(self, pos, thrower, data) (optional): callback function called if the hit failed (e.g. because on_hit returned false or because the area was protected)
 ]]
 
 -- Example:
