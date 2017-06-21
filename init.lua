@@ -340,28 +340,35 @@ function throwing.register_bow(name, def)
 
 		local index = (def.throw_itself and user:get_wield_index()) or user:get_wield_index()+1
 		local res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", index), index)
-		-- Throw itself?
 		if not res then
 			return new_stack or itemstack
 		end
 
-		-- Shoot arrow
-		if shoot_arrow(itemstack, user, def.throw_itself, new_stack) then
-			if not minetest.setting_getbool("creative_mode") then
-				itemstack:add_wear(65535 / (def.uses or 50))
+		-- Sound
+		if def.sound then
+			minetest.sound_play(def.sound, {to_player=user:get_player_name()})
+		end
+
+		minetest.after(def.delay or 0, function()
+			-- Shoot arrow
+			if shoot_arrow(itemstack, user, def.throw_itself, new_stack) then
+				if not minetest.setting_getbool("creative_mode") then
+					itemstack:add_wear(65535 / (def.uses or 50))
+				end
 			end
-		end
 
 
-		if def.throw_itself then
-			-- This is a bug. If we return ItemStack(nil), the player punches the entity,
-			-- and if the entity if a __builtin:item, it gets back to his inventory.
-			minetest.after(0.1, function()
-				user:get_inventory():remove_item("main", itemstack)
-			end)
-		elseif cooldown > 0 then
-			meta:set_int("cooldown", os.time() + cooldown)
-		end
+			if def.throw_itself then
+				-- This is a bug. If we return ItemStack(nil), the player punches the entity,
+				-- and if the entity if a __builtin:item, it gets back to his inventory.
+				minetest.after(0.1, function()
+					user:get_inventory():remove_item("main", itemstack)
+				end)
+			elseif cooldown > 0 then
+				meta:set_int("cooldown", os.time() + cooldown)
+			end
+			user:get_inventory():set_stack("main", user:get_wield_index(), itemstack)
+		end)
 		return itemstack
 	end
 	minetest.register_tool(name, def)

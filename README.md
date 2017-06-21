@@ -50,6 +50,8 @@ Definition: definition table, containing:
     Default is false.
   * cooldown: bow cooldown. Default is setting throwing.bow_cooldown
   * function spawn_arrow_entity(position, arrow, player): defaults to throwing.spawn_arrow_entity
+  * sound: sound to be played when the bow is used
+  * delay: delay before throwing the arrow
 ]]
 
 -- Example:
