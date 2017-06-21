@@ -145,18 +145,24 @@ if get_setting("fire_arrow") then
 		description = "Torch Arrow",
 		tiles = {"throwing_arrow_fire.png", "throwing_arrow_fire.png", "throwing_arrow_fire_back.png", "throwing_arrow_fire_front.png", "throwing_arrow_fire_2.png", "throwing_arrow_fire.png"},
 		on_hit_sound = "default_place_node",
-		on_hit = function(_, last_pos, _, _, hitter)
+		on_hit = function(pos, last_pos, _, _, hitter)
 			if minetest.get_node(last_pos).name ~= "air" then
 				minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 				return
 			end
 
-			local under_node_name = minetest.get_node({x = last_pos.x, y = last_pos.y-1, z = last_pos.z}).name
-			if under_node_name ~= "air" and name ~= "ignore" then
-				minetest.place_node(last_pos, {name="default:torch"})
-			else
-				return false, "Attached node default:torch can not be placed"
+			local r_pos = vector.round(pos)
+			local r_last_pos = vector.round(last_pos)
+			-- Make sure that only one key is different
+			if r_pos.y ~= r_last_pos.y then
+				r_last_pos.x = r_pos.x
+				r_last_pos.z = r_pos.z
+			elseif r_pos.x ~= r_last_pos.x then
+				r_last_pos.y = r_pos.y
+				r_last_pos.z = r_pos.z
 			end
+			minetest.registered_items["default:torch"].on_place(ItemStack("default:torch"), hitter,
+					{type="node", under=r_pos, above=r_last_pos})
 		end
 	})
 end
