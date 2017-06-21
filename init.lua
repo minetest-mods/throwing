@@ -47,6 +47,9 @@ local function shoot_arrow(itemstack, player, throw_itself)
 
 	local luaentity = obj:get_luaentity()
 	luaentity.player = player:get_player_name()
+	if not luaentity.item then
+		luaentity.item = arrow
+	end
 
 	if luaentity.on_throw then
 		if luaentity.on_throw(pos, player, ((player:get_wield_index()+1) % inventory:get_size("main")) + 1, luaentity.data, luaentity) == false then
