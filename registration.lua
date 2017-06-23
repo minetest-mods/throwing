@@ -42,7 +42,7 @@ throwing.register_bow("bow_diamond", {
 })
 
 local function get_setting(name)
-	local value = minetest.setting_getbool("throwing.enable_"..name)
+	local value = minetest.settings:get_bool("throwing.enable_"..name)
 	if value == true or value == nil then
 		return true
 	else

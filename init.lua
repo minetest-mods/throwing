@@ -62,9 +62,9 @@ local function shoot_arrow(itemstack, player, throw_itself, new_stack)
 	end
 
 	local dir = player:get_look_dir()
-	local velocity_factor = tonumber(minetest.setting_get("throwing.velocity_factor")) or 19
-	local horizontal_acceleration_factor = tonumber(minetest.setting_get("throwing.horizontal_acceleration_factor")) or -3
-	local vertical_acceleration = tonumber(minetest.setting_get("throwing.vertical_acceleration")) or -10
+	local velocity_factor = tonumber(minetest.settings:get("throwing.velocity_factor")) or 19
+	local horizontal_acceleration_factor = tonumber(minetest.settings:get("throwing.horizontal_acceleration_factor")) or -3
+	local vertical_acceleration = tonumber(minetest.settings:get("throwing.vertical_acceleration")) or -10
 
 	obj:setvelocity({x=dir.x*velocity_factor, y=dir.y*velocity_factor, z=dir.z*velocity_factor})
 	obj:setacceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
@@ -74,7 +74,7 @@ local function shoot_arrow(itemstack, player, throw_itself, new_stack)
 		minetest.sound_play(luaentity.on_throw_sound or "throwing_sound", {pos=playerpos, gain = 0.5})
 	end
 
-	if not minetest.setting_getbool("creative_mode") then
+	if not minetest.settings:get_bool("creative_mode") then
 		if new_stack then
 			inventory:set_stack("main", index, new_stack)
 		else
@@ -111,7 +111,7 @@ local function arrow_step(self, dtime)
 		end
 
 		local function hit_failed()
-			if not minetest.setting_getbool("creative_mode") and self.item then
+			if not minetest.settings:get_bool("creative_mode") and self.item then
 				player:get_inventory():add_item("main", self.item)
 			end
 			if self.on_hit_fails then
@@ -237,7 +237,7 @@ function throwing.register_arrow(name, def)
 	end
 	def.inventory_image = def.tiles[1]
 	def.on_place = function(itemstack, placer, pointed_thing)
-		if minetest.setting_getbool("throwing.allow_arrow_placing") and pointed_thing.above then
+		if minetest.settings:get_bool("throwing.allow_arrow_placing") and pointed_thing.above then
 			local playername = placer:get_player_name()
 			if not minetest.is_protected(pointed_thing.above, playername) then
 				minetest.log("action", "Player "..playername.." placed arrow "..name.." at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
@@ -352,7 +352,7 @@ function throwing.register_bow(name, def)
 		minetest.after(def.delay or 0, function()
 			-- Shoot arrow
 			if shoot_arrow(itemstack, user, def.throw_itself, new_stack) then
-				if not minetest.setting_getbool("creative_mode") then
+				if not minetest.settings:get_bool("creative_mode") then
 					itemstack:add_wear(65535 / (def.uses or 50))
 				end
 			end
