@@ -311,8 +311,6 @@ end
 
 
 ---------- Bows -----------
-local bow_cooldown = {}
-
 function throwing.register_bow(name, def)
 	if not string.find(name, ":") then
 		name = throwing.modname..":"..name
@@ -341,7 +339,7 @@ function throwing.register_bow(name, def)
 		local index = (def.throw_itself and user:get_wield_index()) or user:get_wield_index()+1
 		local res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", index), index)
 		if not res then
-			return new_stack or itemstack
+			return (def.throw_itself and new_stack) or itemstack
 		end
 
 		-- Sound
@@ -350,6 +348,16 @@ function throwing.register_bow(name, def)
 		end
 
 		minetest.after(def.delay or 0, function()
+			-- Re-check that the arrow can be thrown. Overwrite the new_stack
+			local old_new_stack = new_stack
+			res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", index), index)
+			if not new_stack then
+				new_stack = old_new_stack
+			end
+			if not res then
+				return (def.throw_itself and new_stack) or itemstack
+			end
+
 			-- Shoot arrow
 			if shoot_arrow(itemstack, user, def.throw_itself, new_stack) then
 				if not minetest.settings:get_bool("creative_mode") then
