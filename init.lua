@@ -331,7 +331,8 @@ function throwing.register_bow(name, def)
 		local meta = itemstack:get_meta()
 		local cooldown = def.cooldown or tonumber(minetest.settings:get("throwing.bow_cooldown")) or 0.2
 
-		if cooldown > 0 and meta:get_int("cooldown") > os.time() then
+		if cooldown > 0 and meta:get_int("cooldown") > os.time()
+				or meta:get_int("delay") > os.time() then
 			return
 		end
 
@@ -347,6 +348,7 @@ function throwing.register_bow(name, def)
 			minetest.sound_play(def.sound, {to_player=user:get_player_name()})
 		end
 
+		meta:set_int("delay", os.time() + def.delay or 0)
 		minetest.after(def.delay or 0, function()
 			-- Re-check that the arrow can be thrown. Overwrite the new_stack
 			local old_new_stack = new_stack
