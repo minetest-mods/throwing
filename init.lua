@@ -32,9 +32,8 @@ function throwing.spawn_arrow_entity(pos, arrow, player)
 	end
 end
 
-local function shoot_arrow(itemstack, player, throw_itself, new_stack)
+local function shoot_arrow(itemstack, player, index, throw_itself, new_stack)
 	local inventory = player:get_inventory()
-	local index = player:get_wield_index()
 	if not throw_itself then
 		if index >= player:get_inventory():get_size("main") then
 			return false
@@ -336,8 +335,9 @@ function throwing.register_bow(name, def)
 			return
 		end
 
-		local index = (def.throw_itself and user:get_wield_index()) or user:get_wield_index()+1
-		local res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", index), index)
+		local bow_index = user:get_wield_index()
+		local arrow_index = (def.throw_itself and bow_index) or bow_index+1
+		local res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", arrow_index), arrow_index)
 		if not res then
 			return (def.throw_itself and new_stack) or itemstack
 		end
@@ -350,16 +350,16 @@ function throwing.register_bow(name, def)
 		minetest.after(def.delay or 0, function()
 			-- Re-check that the arrow can be thrown. Overwrite the new_stack
 			local old_new_stack = new_stack
-			res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", index), index)
+			res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", arrow_index), arrow_index)
 			if not new_stack then
 				new_stack = old_new_stack
 			end
 			if not res then
-				return (def.throw_itself and new_stack) or itemstack
+				return
 			end
 
 			-- Shoot arrow
-			if shoot_arrow(itemstack, user, def.throw_itself, new_stack) then
+			if shoot_arrow(itemstack, user, bow_index, def.throw_itself, new_stack) then
 				if not minetest.settings:get_bool("creative_mode") then
 					itemstack:add_wear(65535 / (def.uses or 50))
 				end
@@ -375,7 +375,7 @@ function throwing.register_bow(name, def)
 			elseif cooldown > 0 then
 				meta:set_int("cooldown", os.time() + cooldown)
 			end
-			user:get_inventory():set_stack("main", user:get_wield_index(), itemstack)
+			user:get_inventory():set_stack("main", bow_index, itemstack)
 		end)
 		return itemstack
 	end
