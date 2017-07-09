@@ -39,9 +39,12 @@ Definition: definition table, containing:
   * texture (essential): texture of the bow, shown in inventory.
   * groups (optional): groups of the item.
   * uses: number of uses of the bow (default is 50).
-  * allow_shot (optional): function(player, itemstack, index):
+  * allow_shot (optional): function(player, itemstack, index, last_run):
     - player: the player using the bow
     - itemstack: the itemstack of the bow
+    - index: index of the arrow in the inventory
+    - last_run: whether this is the last time this function is called before actually calling `spawn_arrow_entity`.
+      Currently, `allow_shot` is actually run twice (once before the delay, and once after).
     - should return true if the shot can be made, and false otherwise
     - the default function checks that the arrow to be thrown is a registered arrow
     - it can return a second return value, which is the new itemstack

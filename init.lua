@@ -338,7 +338,7 @@ function throwing.register_bow(name, def)
 
 		local bow_index = user:get_wield_index()
 		local arrow_index = (def.throw_itself and bow_index) or bow_index+1
-		local res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", arrow_index), arrow_index)
+		local res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", arrow_index), arrow_index, false)
 		if not res then
 			return (def.throw_itself and new_stack) or itemstack
 		end
@@ -352,7 +352,7 @@ function throwing.register_bow(name, def)
 		minetest.after(def.delay or 0, function()
 			-- Re-check that the arrow can be thrown. Overwrite the new_stack
 			local old_new_stack = new_stack
-			res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", arrow_index), arrow_index)
+			res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", arrow_index), arrow_index, true)
 			if not new_stack then
 				new_stack = old_new_stack
 			end
