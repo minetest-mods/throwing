@@ -2,26 +2,21 @@
 
 ## Developped by the Mynetest team
 
-This mod is a new rewrite of the original throwing mod by PilzAdam. Compatible replacement for it.
+This mod is an API for registering throwing and throwable things.
+
+Mods based on this API:
+* [throwing_arrows](https://github.com/MT-Eurythmia/throwing_arrows) is a compatible replacement for the throwing mod by PilzAdam.
+* [sling](https://github.com/tacotexmex/sling) is a mod written by @tacotexmex that enables item stack and single item throwing of any item.
 
 ## Configuration
 
 The settings are the following:
 ```
-throwing.enable_arrow = true
-throwing.enable_golden_arrow = true
-throwing.enable_fire_arrow = true
-throwing.enable_teleport_arrow = true
-throwing.enable_dig_arrow = true
-throwing.enable_dig_arrow_admin = true
-throwing.enable_build_arrow = true
-
 throwing.velocity_factor = 19
 throwing.horizontal_acceleration_factor = -3
 throwing.vertical_acceleration = -10
 
 throwing.allow_arrow_placing = false
-throwing.arrow_teleport_in_protected = true
 
 throwing.bow_cooldown = 0.2
 ```

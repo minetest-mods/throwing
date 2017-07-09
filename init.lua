@@ -222,11 +222,12 @@ on_throw(pos, hitter)
 Unlike on_hit, it is optional.
 ]]
 function throwing.register_arrow(name, def)
-	if not string.find(name, ":") then
-		name = throwing.modname..":"..name
-	end
-
 	table.insert(throwing.arrows, name)
+
+	local registration_name = name
+	if name:sub(1,9) == "throwing:" then
+		registration_name = ":"..name
+	end
 
 	if not def.groups then
 		def.groups = {}
@@ -274,9 +275,9 @@ function throwing.register_arrow(name, def)
 			{7.5/17, -2.5/17, -2.5/17, 8.5/17, -3.5/17, -3.5/17},
 		}
 	}
-	minetest.register_node(name, def)
+	minetest.register_node(registration_name, def)
 
-	minetest.register_entity(name.."_entity", throwing.make_arrow_def{
+	minetest.register_entity(registration_name.."_entity", throwing.make_arrow_def{
 		physical = false,
 		visual = "wielditem",
 		visual_size = {x = 0.125, y = 0.125},
@@ -311,10 +312,6 @@ end
 
 ---------- Bows -----------
 function throwing.register_bow(name, def)
-	if not string.find(name, ":") then
-		name = throwing.modname..":"..name
-	end
-
 	if not def.allow_shot then
 		def.allow_shot = function(player, itemstack, index)
 			if index >= player:get_inventory():get_size("main") and not def.throw_itself then
@@ -394,6 +391,3 @@ function throwing.register_bow(name, def)
 		})
 	end
 end
-
-
-dofile(minetest.get_modpath(throwing.modname).."/registration.lua")
