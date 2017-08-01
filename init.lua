@@ -381,8 +381,14 @@ function throwing.register_bow(name, def)
 	minetest.register_tool(name, def)
 
 	if def.itemcraft then
+		-- Check for an override name
+		-- because an ``output = ":name"'' can't exist in a recipe
+		local outpout_name = name
+		if name:sub(1,1) == ":" then
+			output_name = name:sub(2)
+		end
 		minetest.register_craft({
-			output = name,
+			output = output_name,
 			recipe = {
 				{"farming:cotton", def.itemcraft, ""},
 				{"farming:cotton", "", def.itemcraft},
