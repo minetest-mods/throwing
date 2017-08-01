@@ -383,7 +383,7 @@ function throwing.register_bow(name, def)
 	if def.itemcraft then
 		-- Check for an override name
 		-- because an ``output = ":name"'' can't exist in a recipe
-		local outpout_name = name
+		local output_name = name
 		if name:sub(1,1) == ":" then
 			output_name = name:sub(2)
 		end
