@@ -92,7 +92,7 @@ local function arrow_step(self, dtime)
 	local node = minetest.get_node(pos)
 
 	local logging = function(message, level)
-		minetest.log(level or "action", "[throwing] Arrow "..self.item or self.name.." throwed by player "..self.player.." "..tostring(self.timer).."s ago "..message)
+		minetest.log(level or "action", "[throwing] Arrow "..(self.item or self.name).." throwed by player "..self.player.." "..tostring(self.timer).."s ago "..message)
 	end
 
 	local hit = function(pos, node, obj)
