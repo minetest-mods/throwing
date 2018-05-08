@@ -195,6 +195,10 @@ local function arrow_step(self, dtime)
 		end
 	end
 
+	-- Support for shining items using wielded light
+	if minetest.global_exists("wielded_light") and self.object then
+		wielded_light.update_light_by_item(self.item, self.object:get_pos())
+	end
 
 	self.last_pos = pos -- Used by the build arrow
 end
