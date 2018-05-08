@@ -10,12 +10,7 @@ throwing.modname = minetest.get_current_modname()
 
 --------- Arrows functions ---------
 function throwing.is_arrow(itemstack)
-	for _, arrow in ipairs(throwing.arrows) do
-		if (type(itemstack) == "string" and itemstack or itemstack:get_name()) == arrow then
-			return true
-		end
-	end
-	return false
+	return throwing.arrows[ItemStack(itemstack):get_name()]
 end
 
 function throwing.spawn_arrow_entity(pos, arrow, player)
@@ -222,7 +217,7 @@ on_throw(pos, hitter)
 Unlike on_hit, it is optional.
 ]]
 function throwing.register_arrow(name, def)
-	table.insert(throwing.arrows, name)
+	throwing.arrows[name] = true
 
 	local registration_name = name
 	if name:sub(1,9) == "throwing:" then
