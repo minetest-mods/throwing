@@ -165,7 +165,7 @@ local function arrow_step(self, dtime)
 		self.object:remove()
 		logging("reached ignore. Removing.")
 		return
-	elseif node.name ~= "air" then
+	elseif (minetest.registered_items[node.name] or {}).drawtype ~= "airlike" then
 		if self.target ~= throwing.target_object then -- throwing.target_both, nil, throwing.target_node, or any invalid value
 			if hit(pos, node, nil) ~= false then
 				self.object:remove()
