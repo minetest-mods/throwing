@@ -1,6 +1,6 @@
 # Throwing
 
-## Developped by the Mynetest team
+## Developed by the Eurythmia team
 
 This mod is an API for registering throwing and throwable things.
 
@@ -46,6 +46,8 @@ Definition: definition table, containing:
   * throw_itself (optional): whether the bow should throw itself instead of the arrow next to it in the inventory.
     If present, allow_shot is ignored.
     Default is false.
+    *Warning*: this field is not known to be currently used by a mod. If you encounter bugs using it, please open
+    an issue!
   * cooldown: bow cooldown. Default is setting throwing.bow_cooldown
   * function spawn_arrow_entity(position, arrow, player): defaults to throwing.spawn_arrow_entity
   * sound: sound to be played when the bow is used
@@ -108,6 +110,6 @@ throwing.register_arrow("arrow", {
 })
 ```
 
-If the item to throw is an arrow registered using `minetest.register_arrow`, the entity used will be the registered entity.
-Otherwise, if its definition contains a `throwing_entity` field, this field will be used as the entity name if it is a string, otherwise it will be called as a function(pos, player) that has to make the object to spawn and to return the corresponding ObjectRef.
-If the item is neither an arrow nor has any `throwing_entity` field, the corresponding `__builtin:item` will be used.
+If the item to throw is an arrow registered using `throwing.register_arrow`, the entity used will be the entity automatically registered by this function.
+Otherwise, if its definition contains a `throwing_entity` field, this field will be used as the entity name if it is a string, otherwise it will be called as a `function(pos, player)` that has to spawn the object and return the corresponding ObjectRef.
+If the item is neither an arrow nor has a `throwing_entity` field, the corresponding `__builtin:item` will be used.
