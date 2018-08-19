@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://git.fwhost.eu/MT-Eurythmia/throwing.git
+	branch = master
+	commit = b57abd5abff4d3beb2418c15e10f1a66f3652bf9
+	parent = 4fd5687561b37b0c35198ddce1562f7fd6e09763
+	cmdver = 0.3.1
