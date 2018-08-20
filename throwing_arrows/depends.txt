@@ -1,5 +1,0 @@
-throwing
-default
-farming
-mesecons?
-mesecons_button?
