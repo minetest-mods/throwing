@@ -5,8 +5,8 @@
 This mod is an API for registering throwing and throwable things.
 
 Mods based on this API:
-* [throwing_arrows](https://github.com/MT-Eurythmia/throwing_arrows) is a compatible replacement for the throwing mod by PilzAdam.
-* [sling](https://github.com/tacotexmex/sling) is a mod written by @tacotexmex that enables item stack and single item throwing of any item.
+* [throwing_arrows](https://github.com/minetest-mods/throwing_arrows) is a compatible replacement for the throwing mod by PilzAdam.
+* [sling](https://github.com/minetest-mods/sling) is a mod written by @tacotexmex that enables item stack and single item throwing of any item.
 
 ## Configuration
 
