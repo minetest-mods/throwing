@@ -7,6 +7,7 @@ This mod is an API for registering throwing and throwable things.
 Mods based on this API:
 * [throwing_arrows](https://github.com/minetest-mods/throwing_arrows) is a compatible replacement for the throwing mod by PilzAdam.
 * [sling](https://github.com/minetest-mods/sling) is a mod written by @tacotexmex that enables item stack and single item throwing of any item.
+* [Native American Village](https://github.com/Steamed-Punk/Native-American-Village), by Steamed-Punk, adds, among many other various items, a tomahawk that can be thrown.
 
 ## Configuration
 
@@ -33,7 +34,7 @@ Definition: definition table, containing:
   * description (highly recommended): description of the bow.
   * texture (essential): texture of the bow, shown in inventory.
   * groups (optional): groups of the item.
-  * uses: number of uses of the bow (default is 50).
+  * uses: number of uses of the bow (the default is 50).
   * allow_shot (optional): function(player, itemstack, index, last_run):
     - player: the player using the bow
     - itemstack: the itemstack of the bow
@@ -42,12 +43,9 @@ Definition: definition table, containing:
       Currently, `allow_shot` is actually run twice (once before the delay, and once after).
     - should return true if the shot can be made, and false otherwise
     - the default function checks that the arrow to be thrown is a registered arrow
-    - it can return a second return value, which is the new itemstack
+    - it can return a second return value, which is the new itemstack to replace the arrow after the shot
   * throw_itself (optional): whether the bow should throw itself instead of the arrow next to it in the inventory.
-    If present, allow_shot is ignored.
-    Default is false.
-    *Warning*: this field is not known to be currently used by a mod. If you encounter bugs using it, please open
-    an issue!
+    The default is false.
   * cooldown: bow cooldown. Default is setting throwing.bow_cooldown
   * function spawn_arrow_entity(position, arrow, player): defaults to throwing.spawn_arrow_entity
   * sound: sound to be played when the bow is used
