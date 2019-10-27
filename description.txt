@@ -1,1 +1,0 @@
-Throwing, formally throwing_redo - This mod provides an API for registering throwing and throwable things
