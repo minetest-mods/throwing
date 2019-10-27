@@ -38,7 +38,7 @@ local function shoot_arrow(itemstack, player, index, throw_itself, new_stack)
 	local arrow_stack = inventory:get_stack("main", index)
 	local arrow = arrow_stack:get_name()
 
-	local playerpos = player:getpos()
+	local playerpos = player:get_pos()
 	local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
 	local obj = (minetest.registered_items[itemstack:get_name()].spawn_arrow_entity or throwing.spawn_arrow_entity)(pos, arrow, player)
 
@@ -60,9 +60,9 @@ local function shoot_arrow(itemstack, player, index, throw_itself, new_stack)
 	local horizontal_acceleration_factor = tonumber(minetest.settings:get("throwing.horizontal_acceleration_factor")) or -3
 	local vertical_acceleration = tonumber(minetest.settings:get("throwing.vertical_acceleration")) or -10
 
-	obj:setvelocity({x=dir.x*velocity_factor, y=dir.y*velocity_factor, z=dir.z*velocity_factor})
-	obj:setacceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
-	obj:setyaw(player:get_look_horizontal()-math.pi/2)
+	obj:set_velocity({x=dir.x*velocity_factor, y=dir.y*velocity_factor, z=dir.z*velocity_factor})
+	obj:set_acceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
+	obj:set_yaw(player:get_look_horizontal()-math.pi/2)
 
 	if luaentity.on_throw_sound ~= "" then
 		minetest.sound_play(luaentity.on_throw_sound or "throwing_sound", {pos=playerpos, gain = 0.5})
@@ -83,7 +83,7 @@ end
 
 local function arrow_step(self, dtime)
 	self.timer = self.timer + dtime
-	local pos = self.object:getpos()
+	local pos = self.object:get_pos()
 	local node = minetest.get_node(pos)
 
 	local logging = function(message, level)
