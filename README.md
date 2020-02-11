@@ -30,7 +30,6 @@ function throwing.register_bow(name, definition)
 --[[
 Name: Bow name. If it doesn't contain ":", the "throwing:" prefix will be added.
 Definition: definition table, containing:
-  * itemcraft (optional, you may want to register your own craft or to make the bow uncraftable): item used to craft the bow.
   * description (highly recommended): description of the bow.
   * texture (essential): texture of the bow, shown in inventory.
   * groups (optional): groups of the item.
@@ -64,8 +63,6 @@ function throwing.register_arrow(name, definition table)
 --[[
 Name: Arrow name. If it doesn't contain ":", the "throwing:" prefix will be added.
 Definition: definition table, containing:
-  * itemcraft (optional, you may want to register your own craft or to make the arrow uncraftable): item used to craft the arrow.
-  * craft_quantity (optional, defaulting to 1 if itemcraft is non-nil, pointless otherwise): quantity of arrows in the craft output.
   * tiles (essential): tiles of the arrow.
   * target (optional, defaulting to throwing.target_both): what the arrow is able to hit (throwing.target_node, throwing.target_object, throwing.target_both).
   * allow_protected (optional, defaulting to false): whether the arrow can be throw in a protected area

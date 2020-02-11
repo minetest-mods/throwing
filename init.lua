@@ -291,21 +291,6 @@ function throwing.register_arrow(name, def)
 		on_hit_fails = def.on_hit_fails,
 		item = name,
 	})
-
-	if def.itemcraft then
-		minetest.register_craft({
-			output = name.." "..tostring(def.craft_quantity or 1),
-			recipe = {
-				{def.itemcraft, "default:stick", "default:stick"}
-			}
-		})
-		minetest.register_craft({
-			output = name.." "..tostring(def.craft_quantity or 1),
-			recipe = {
-				{ "default:stick", "default:stick", def.itemcraft}
-			}
-		})
-	end
 end
 
 
@@ -378,21 +363,4 @@ function throwing.register_bow(name, def)
 		return itemstack
 	end
 	minetest.register_tool(name, def)
-
-	if def.itemcraft then
-		-- Check for an override name
-		-- because an ``output = ":name"'' can't exist in a recipe
-		local output_name = name
-		if name:sub(1,1) == ":" then
-			output_name = name:sub(2)
-		end
-		minetest.register_craft({
-			output = output_name,
-			recipe = {
-				{"farming:cotton", def.itemcraft, ""},
-				{"farming:cotton", "", def.itemcraft},
-				{"farming:cotton", def.itemcraft, ""},
-			}
-		})
-	end
 end
