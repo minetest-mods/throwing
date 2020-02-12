@@ -305,7 +305,7 @@ end
 
 ---------- Bows -----------
 function throwing.register_bow(name, def)
-	local enable_toolrank = use_toolranks and not def.no_toolranks and not def.original_description
+	local enable_toolranks = use_toolranks and not def.no_toolranks
 	if not def.allow_shot then
 		def.allow_shot = function(player, itemstack, index)
 			if index >= player:get_inventory():get_size("main") and not def.throw_itself then
@@ -377,7 +377,7 @@ function throwing.register_bow(name, def)
 		return itemstack
 	end
 	if enable_toolranks then
-		def.original_description = def.description
+		def.original_description = def.original_description or def.description
 		def.description = toolranks.create_description(def.description, 0, 1)
 	end
 	minetest.register_tool(name, def)
