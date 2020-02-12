@@ -304,11 +304,7 @@ end
 
 
 ---------- Bows -----------
-function throwing.register_bow(name, def, enable_toolranks)
-	if enable_toolranks == nil then
-		-- default value for enable_toolranks
-		enable_toolranks = true
-	end
+function throwing.register_bow(name, def, no_toolranks)
 	if not def.allow_shot then
 		def.allow_shot = function(player, itemstack, index)
 			if index >= player:get_inventory():get_size("main") and not def.throw_itself then
@@ -359,7 +355,7 @@ function throwing.register_bow(name, def, enable_toolranks)
 				if not minetest.settings:get_bool("creative_mode") then
 					local uses = 65535 / (def.uses or 50)
 					itemstack:add_wear(uses)
-					if use_toolranks and enable_toolranks then
+					if use_toolranks and not no_toolranks then
 						toolranks.new_afteruse(itemstack, user, nil, {wear= uses})
 					end
 				end
@@ -380,7 +376,7 @@ function throwing.register_bow(name, def, enable_toolranks)
 		return itemstack
 	end
 	minetest.register_tool(name, def)
-	if use_toolranks and enable_toolranks then
+	if use_toolranks and not no_toolranks then
 		if name:sub(1, 1) == ":" then
 			local sub_name = name:sub(2)
 		end

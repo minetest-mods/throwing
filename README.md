@@ -26,7 +26,7 @@ throwing.bow_cooldown = 0.2
 
 There are two available functions in the mod API:
 ```lua
-function throwing.register_bow(name, definition, enable_toolranks)
+function throwing.register_bow(name, definition, no_toolranks)
 --[[
 Name: Bow name. If it doesn't contain ":", the "throwing:" prefix will be added.
 Definition: definition table, containing:
@@ -49,7 +49,7 @@ Definition: definition table, containing:
   * function spawn_arrow_entity(position, arrow, player): defaults to throwing.spawn_arrow_entity
   * sound: sound to be played when the bow is used
   * delay: delay before throwing the arrow
-Enable_toolranks: Enable toolranks support on this item. Defaults to true.
+No_toolranks: Disable toolranks support on this item. Defaults to false.
 ]]
 
 -- Example:
