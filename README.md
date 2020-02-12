@@ -49,7 +49,7 @@ Definition: definition table, containing:
   * function spawn_arrow_entity(position, arrow, player): defaults to throwing.spawn_arrow_entity
   * sound: sound to be played when the bow is used
   * delay: delay before throwing the arrow
-No_toolranks: Disable toolranks support on this item. Defaults to false.
+  * no_toolranks: Disable toolranks support on this item. Defaults to false.
 ]]
 
 -- Example:
