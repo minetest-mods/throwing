@@ -7,7 +7,7 @@ throwing.target_node = 2
 throwing.target_both = 3
 
 throwing.modname = minetest.get_current_modname()
-
+local use_toolranks = minetest.get_modpath("toolranks")
 --------- Arrows functions ---------
 function throwing.is_arrow(itemstack)
 	return throwing.arrows[ItemStack(itemstack):get_name()]
@@ -371,4 +371,11 @@ function throwing.register_bow(name, def)
 		return itemstack
 	end
 	minetest.register_tool(name, def)
+	if use_toolranks then
+		minetest.override_item(name:sub(2), {
+			original_description = def.description,
+			description = toolranks.create_description(def.description, 0, 1),
+			after_user = toolranks.new_afteruse
+		})
+	end
 end
