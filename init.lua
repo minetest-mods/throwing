@@ -375,14 +375,9 @@ function throwing.register_bow(name, def, no_toolranks)
 		end)
 		return itemstack
 	end
-	minetest.register_tool(name, def)
-	if use_toolranks and not no_toolranks then
-		if name:sub(1, 1) == ":" then
-			local sub_name = name:sub(2)
-		end
-		minetest.override_item(sub_name or name, {
-			original_description = def.description,
-			description = toolranks.create_description(def.description, 0, 1),
-		})
+	if use_toolranks and not no_toolranks and not def.original_description then
+		def.original_description = def.description
+		def.description = toolranks.create_description(def.description, 0, 1)
 	end
+	minetest.register_tool(name, def)
 end
