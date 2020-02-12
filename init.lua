@@ -8,6 +8,7 @@ throwing.target_both = 3
 
 throwing.modname = minetest.get_current_modname()
 local use_toolranks = minetest.get_modpath("toolranks")
+
 --------- Arrows functions ---------
 function throwing.is_arrow(itemstack)
 	return throwing.arrows[ItemStack(itemstack):get_name()]
@@ -303,7 +304,11 @@ end
 
 
 ---------- Bows -----------
-function throwing.register_bow(name, def)
+function throwing.register_bow(name, def, enable_toolranks)
+	if enable_toolranks == nil then
+		-- default value for enable_toolranks
+		enable_toolranks = true
+	end
 	if not def.allow_shot then
 		def.allow_shot = function(player, itemstack, index)
 			if index >= player:get_inventory():get_size("main") and not def.throw_itself then
@@ -352,9 +357,10 @@ function throwing.register_bow(name, def)
 			-- Shoot arrow
 			if shoot_arrow(itemstack, user, bow_index, def.throw_itself, new_stack) then
 				if not minetest.settings:get_bool("creative_mode") then
-					itemstack:add_wear(65535 / (def.uses or 50))
-					if use_toolranks then
-						toolranks.new_afteruse(itemstack, user, nil, {wear= 65535 / (def.uses or 50)})
+					local uses = 65535 / (def.uses or 50)
+					itemstack:add_wear(uses)
+					if use_toolranks and enable_toolranks then
+						toolranks.new_afteruse(itemstack, user, nil, {wear= uses})
 					end
 				end
 			end
@@ -374,8 +380,11 @@ function throwing.register_bow(name, def)
 		return itemstack
 	end
 	minetest.register_tool(name, def)
-	if use_toolranks then
-		minetest.override_item(name:sub(2), {
+	if use_toolranks and enable_toolranks then
+		if name:sub(1, 1) == ":" then
+			local sub_name = name:sub(2)
+		end
+		minetest.override_item(sub_name or name, {
 			original_description = def.description,
 			description = toolranks.create_description(def.description, 0, 1),
 		})
