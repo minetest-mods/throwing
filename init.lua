@@ -353,6 +353,9 @@ function throwing.register_bow(name, def)
 			if shoot_arrow(itemstack, user, bow_index, def.throw_itself, new_stack) then
 				if not minetest.settings:get_bool("creative_mode") then
 					itemstack:add_wear(65535 / (def.uses or 50))
+					if use_toolranks then
+						toolranks.new_afteruse(itemstack, user, nil, {wear= 65535 / (def.uses or 50)})
+					end
 				end
 			end
 
@@ -375,7 +378,6 @@ function throwing.register_bow(name, def)
 		minetest.override_item(name:sub(2), {
 			original_description = def.description,
 			description = toolranks.create_description(def.description, 0, 1),
-			after_user = toolranks.new_afteruse
 		})
 	end
 end
