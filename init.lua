@@ -298,7 +298,7 @@ function throwing.register_bow(name, def)
 			if index >= player:get_inventory():get_size("main") and not def.throw_itself then
 				return false
 			end
-			return throwing.is_arrow(itemstack)
+			return throwing.is_arrow(itemstack) or def.throw_itself
 		end
 	end
 	if not def.inventory_image then
