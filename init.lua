@@ -28,20 +28,23 @@ function throwing.spawn_arrow_entity(pos, arrow, player)
 	end
 end
 
-local function shoot_arrow(itemstack, player, index, throw_itself, new_stack)
+local function shoot_arrow(def, toolranks_data, player, bow_index, throw_itself, new_stack)
 	local inventory = player:get_inventory()
-	if not throw_itself then
-		if index >= player:get_inventory():get_size("main") then
+	local arrow_index
+	if throw_itself then
+		arrow_index = bow_index
+	else
+		if bow_index >= player:get_inventory():get_size("main") then
 			return false
 		end
-		index = index + 1
+		arrow_index = bow_index + 1
 	end
-	local arrow_stack = inventory:get_stack("main", index)
+	local arrow_stack = inventory:get_stack("main", arrow_index)
 	local arrow = arrow_stack:get_name()
 
 	local playerpos = player:get_pos()
 	local pos = {x=playerpos.x,y=playerpos.y+1.5,z=playerpos.z}
-	local obj = (minetest.registered_items[itemstack:get_name()].spawn_arrow_entity or throwing.spawn_arrow_entity)(pos, arrow, player)
+	local obj = (def.spawn_arrow_entity or throwing.spawn_arrow_entity)(pos, arrow, player)
 
 	local luaentity = obj:get_luaentity()
 
@@ -52,9 +55,10 @@ local function shoot_arrow(itemstack, player, index, throw_itself, new_stack)
 	end
 	luaentity.data = {}
 	luaentity.timer = 0
+	luaentity.toolranks = toolranks_data -- May be nil if toolranks is disabled
 
 	if luaentity.on_throw then
-		if luaentity:on_throw(pos, player, arrow_stack, index, luaentity.data) == false then
+		if luaentity:on_throw(pos, player, arrow_stack, arrow_index, luaentity.data) == false then
 			obj:remove()
 			return false
 		end
@@ -75,11 +79,11 @@ local function shoot_arrow(itemstack, player, index, throw_itself, new_stack)
 
 	if not minetest.settings:get_bool("creative_mode") then
 		if new_stack then
-			inventory:set_stack("main", index, new_stack)
+			inventory:set_stack("main", arrrow_index, new_stack)
 		else
-			local stack = inventory:get_stack("main", index)
+			local stack = inventory:get_stack("main", arrow_index)
 			stack:take_item()
-			inventory:set_stack("main", index, stack)
+			inventory:set_stack("main", arrow_index, stack)
 		end
 	end
 
@@ -161,6 +165,16 @@ function throwing.arrow_step(self, dtime)
 				logging("collided with player "..obj:get_player_name().." at ("..pos.x..","..pos.y..","..pos.z..")")
 			else
 				logging("collided with object at ("..pos.x..","..pos.y..","..pos.z..")")
+			end
+		end
+
+		-- Toolranks support: update bow uses
+		if self.toolranks then
+			local inventory = player:get_inventory()
+			-- Check that the player did not move the bow
+			if inventory:get_stack("main", self.toolranks.index):get_name() == self.toolranks.itemstack:get_name() then
+				local new_itemstack = toolranks.new_afteruse(self.toolranks.itemstack, player, nil, {wear = self.toolranks.wear})
+				inventory:set_stack("main", self.toolranks.index, new_itemstack)
 			end
 		end
 	end
@@ -306,6 +320,8 @@ end
 ---------- Bows -----------
 function throwing.register_bow(name, def)
 	local enable_toolranks = use_toolranks and not def.no_toolranks
+
+	def.name = name
 	if not def.allow_shot then
 		def.allow_shot = function(player, itemstack, index)
 			if index >= player:get_inventory():get_size("main") and not def.throw_itself then
@@ -352,13 +368,18 @@ function throwing.register_bow(name, def)
 			end
 
 			-- Shoot arrow
-			if shoot_arrow(itemstack, user, bow_index, def.throw_itself, new_stack) then
+			local uses = 65535 / (def.uses or 50)
+			local toolranks_data
+			if enable_toolranks then
+				toolranks_data = {
+					itemstack = itemstack,
+					index = bow_index,
+					wear = uses
+				}
+			end
+			if shoot_arrow(def, toolranks_data, user, bow_index, def.throw_itself, new_stack) then
 				if not minetest.settings:get_bool("creative_mode") then
-					local uses = 65535 / (def.uses or 50)
 					itemstack:add_wear(uses)
-					if enable_toolranks then
-						toolranks.new_afteruse(itemstack, user, nil, {wear = uses})
-					end
 				end
 			end
 
