@@ -43,10 +43,14 @@ local function shoot_arrow(itemstack, player, index, throw_itself, new_stack)
 	local obj = (minetest.registered_items[itemstack:get_name()].spawn_arrow_entity or throwing.spawn_arrow_entity)(pos, arrow, player)
 
 	local luaentity = obj:get_luaentity()
+
+	-- Set custom data in the entity
 	luaentity.player = player:get_player_name()
 	if not luaentity.item then
 		luaentity.item = arrow
 	end
+	luaentity.data = {}
+	luaentity.timer = 0
 
 	if luaentity.on_throw then
 		if luaentity:on_throw(pos, player, arrow_stack, index, luaentity.data) == false then
@@ -203,14 +207,6 @@ local function arrow_step(self, dtime)
 	self.last_pos = pos -- Used by the build arrow
 end
 
-function throwing.make_arrow_def(def)
-	def.timer = 0
-	def.player = ""
-	def.on_step = arrow_step
-	def.data = {}
-	return def
-end
-
 --[[
 on_hit(pos, last_pos, node, object, hitter)
 Either node or object is nil, depending whether the arrow collided with an object (luaentity or player) or with a node.
@@ -276,7 +272,7 @@ function throwing.register_arrow(name, def)
 	}
 	minetest.register_node(registration_name, def)
 
-	minetest.register_entity(registration_name.."_entity", throwing.make_arrow_def{
+	minetest.register_entity(registration_name.."_entity", {
 		physical = false,
 		visual = "wielditem",
 		visual_size = {x = 0.125, y = 0.125},
@@ -289,6 +285,7 @@ function throwing.register_arrow(name, def)
 		allow_protected = def.allow_protected,
 		target = def.target,
 		on_hit_fails = def.on_hit_fails,
+		on_step = arrow_step,
 		item = name,
 	})
 end
