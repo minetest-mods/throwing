@@ -85,7 +85,12 @@ local function shoot_arrow(itemstack, player, index, throw_itself, new_stack)
 	return true
 end
 
-local function arrow_step(self, dtime)
+function throwing.arrow_step(self, dtime)
+	if not self.timer or not self.player then
+		self.object:remove()
+		return
+	end
+
 	self.timer = self.timer + dtime
 	local pos = self.object:get_pos()
 	local node = minetest.get_node(pos)
@@ -207,6 +212,12 @@ local function arrow_step(self, dtime)
 	self.last_pos = pos -- Used by the build arrow
 end
 
+-- Backwards compatibility
+function throwing.make_arrow_def(def)
+	def.on_step = throwing.arrow_step
+	return def
+end
+
 --[[
 on_hit(pos, last_pos, node, object, hitter)
 Either node or object is nil, depending whether the arrow collided with an object (luaentity or player) or with a node.
@@ -285,7 +296,7 @@ function throwing.register_arrow(name, def)
 		allow_protected = def.allow_protected,
 		target = def.target,
 		on_hit_fails = def.on_hit_fails,
-		on_step = arrow_step,
+		on_step = throwing.arrow_step,
 		item = name,
 	})
 end
