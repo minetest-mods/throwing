@@ -207,6 +207,14 @@ local function arrow_step(self, dtime)
 	self.last_pos = pos -- Used by the build arrow
 end
 
+function throwing.make_arrow_def(def)
+	def.timer = 0
+	def.player = ""
+	def.on_step = arrow_step
+	def.data = {}
+	return def
+end
+
 --[[
 on_hit(pos, last_pos, node, object, hitter)
 Either node or object is nil, depending whether the arrow collided with an object (luaentity or player) or with a node.
