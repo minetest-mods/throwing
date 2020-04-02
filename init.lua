@@ -28,6 +28,22 @@ function throwing.spawn_arrow_entity(pos, arrow, player)
 	end
 end
 
+local function apply_realistic_acceleration(obj, mass)
+	if not minetest.settings:get_bool("throwing.realistic_trajectory", false) then
+		return
+	end
+
+	local vertical_acceleration = tonumber(minetest.settings:get("throwing.vertical_acceleration")) or -10
+	local friction_coef = tonumber(minetest.settings:get("throwing.frictional_coefficient")) or -3
+
+	local velocity = obj:get_velocity()
+	obj:set_acceleration({
+		x = friction_coef * velocity.x / mass,
+		y = friction_coef * velocity.y / mass + vertical_acceleration,
+		z = friction_coef * velocity.z / mass
+	})
+end
+
 local function shoot_arrow(def, toolranks_data, player, bow_index, throw_itself, new_stack)
 	local inventory = player:get_inventory()
 	local arrow_index
@@ -65,13 +81,28 @@ local function shoot_arrow(def, toolranks_data, player, bow_index, throw_itself,
 	end
 
 	local dir = player:get_look_dir()
-	local velocity_factor = tonumber(minetest.settings:get("throwing.velocity_factor")) or 19
-	local horizontal_acceleration_factor = tonumber(minetest.settings:get("throwing.horizontal_acceleration_factor")) or -3
 	local vertical_acceleration = tonumber(minetest.settings:get("throwing.vertical_acceleration")) or -10
+	local velocity_factor = tonumber(minetest.settings:get("throwing.velocity_factor")) or 19
+	local velocity_mode = minetest.settings:get("throwing.velocity_mode") or "strength"
 
-	obj:set_velocity({x=dir.x*velocity_factor, y=dir.y*velocity_factor, z=dir.z*velocity_factor})
-	obj:set_acceleration({x=dir.x*horizontal_acceleration_factor, y=vertical_acceleration, z=dir.z*horizontal_acceleration_factor})
+	local velocity
+	if velocity_mode == "simple" then
+		velocity = velocity_factor
+	elseif velocity_mode == "momentum" then
+		velocity = def.strength * velocity_factor / luaentity.mass
+	else
+		velocity = def.strength * velocity_factor
+	end
+
+	obj:set_velocity({
+		x = dir.x * velocity,
+		y = dir.y * velocity,
+		z = dir.z * velocity
+	})
+	obj:set_acceleration({x = 0, y = vertical_acceleration, z = 0})
 	obj:set_yaw(player:get_look_horizontal()-math.pi/2)
+
+	apply_realistic_acceleration(obj, luaentity.mass)
 
 	if luaentity.on_throw_sound ~= "" then
 		minetest.sound_play(luaentity.on_throw_sound or "throwing_sound", {pos=playerpos, gain = 0.5})
@@ -224,6 +255,8 @@ function throwing.arrow_step(self, dtime)
 		wielded_light.update_light_by_item(self.item, self.object:get_pos())
 	end
 
+	apply_realistic_acceleration(self.object, self.mass) -- Physics: air friction
+
 	self.last_pos = pos -- Used by the build arrow
 end
 
@@ -256,6 +289,7 @@ function throwing.register_arrow(name, def)
 	if not def.groups.dig_immediate then
 		def.groups.dig_immediate = 3
 	end
+
 	def.inventory_image = def.tiles[1]
 	def.on_place = function(itemstack, placer, pointed_thing)
 		if minetest.settings:get_bool("throwing.allow_arrow_placing") and pointed_thing.above then
@@ -313,6 +347,7 @@ function throwing.register_arrow(name, def)
 		on_hit_fails = def.on_hit_fails,
 		on_step = throwing.arrow_step,
 		item = name,
+		mass = def.mass or 1,
 	})
 end
 
@@ -322,6 +357,7 @@ function throwing.register_bow(name, def)
 	local enable_toolranks = use_toolranks and not def.no_toolranks
 
 	def.name = name
+
 	if not def.allow_shot then
 		def.allow_shot = function(player, itemstack, index)
 			if index >= player:get_inventory():get_size("main") and not def.throw_itself then
@@ -330,9 +366,15 @@ function throwing.register_bow(name, def)
 			return throwing.is_arrow(itemstack) or def.throw_itself
 		end
 	end
+
 	if not def.inventory_image then
 		def.inventory_image = def.texture
 	end
+
+	if not def.strength then
+		def.strength = 20
+	end
+
 	def.on_use = function(itemstack, user, pointed_thing)
 		-- Cooldown
 		local meta = itemstack:get_meta()
@@ -397,9 +439,11 @@ function throwing.register_bow(name, def)
 		end)
 		return itemstack
 	end
+
 	if enable_toolranks then
 		def.original_description = def.original_description or def.description
 		def.description = toolranks.create_description(def.description, 0, 1)
 	end
+
 	minetest.register_tool(name, def)
 end
