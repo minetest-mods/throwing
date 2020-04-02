@@ -13,13 +13,19 @@ Mods based on this API:
 
 The settings are the following:
 ```
+# Movement parameters
 throwing.velocity_factor = 19
 throwing.horizontal_acceleration_factor = -3
 throwing.vertical_acceleration = -10
 
+# Whether to allow placing an arrow as a node
 throwing.allow_arrow_placing = false
 
+# Minimum time between two shots
 throwing.bow_cooldown = 0.2
+
+# Whether to enable toolranks for bows
+throwing.toolranks = true
 ```
 
 ## API
@@ -49,6 +55,7 @@ Definition: definition table, containing:
   * function spawn_arrow_entity(position, arrow, player): defaults to throwing.spawn_arrow_entity
   * sound: sound to be played when the bow is used
   * delay: delay before throwing the arrow
+  * no_toolranks: If true, toolranks support is disabled for this item. Defaults to false.
 ]]
 
 -- Example:
