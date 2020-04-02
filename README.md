@@ -13,13 +13,19 @@ Mods based on this API:
 
 The settings are the following:
 ```
+# Movement parameters
 throwing.velocity_factor = 19
 throwing.horizontal_acceleration_factor = -3
 throwing.vertical_acceleration = -10
 
+# Whether to allow placing an arrow as a node
 throwing.allow_arrow_placing = false
 
+# Minimum time between two shots
 throwing.bow_cooldown = 0.2
+
+# Whether to enable toolranks for bows
+throwing.toolranks = true
 ```
 
 ## API

@@ -7,7 +7,7 @@ throwing.target_node = 2
 throwing.target_both = 3
 
 throwing.modname = minetest.get_current_modname()
-local use_toolranks = minetest.get_modpath("toolranks")
+local use_toolranks = minetest.get_modpath("toolranks") and minetest.settings:get_bool("throwing.toolranks", true)
 
 --------- Arrows functions ---------
 function throwing.is_arrow(itemstack)
