@@ -36,15 +36,15 @@ throwing.toolranks = true
 
 By default, the trajectory of the arrow is a simple parabola. You can set the vertical acceleration (acceleration of gravity) using `throwing.vertical_acceleration`.
 
-If you want a more realistic trajectory that uses a first-order modelling of air friction, you can set `throwing.realistic_trajectory` to true. In this mode, `throwing.frictional_coefficient` indicates the ratio between the friction force on the arrow and its velocity. It should be negative. The acceleration of the arrow is subsequently determined by dividing the force by the "mass" of the arrow, the reference mass of 1 being the mass of a simple steel arrow. Generally, the frictional coefficient should be quite small; a value of -1 will already drastically shorten the range of the arrow. The default is -0.5.
+If you want a more realistic trajectory that uses a first-order modelling of air friction, you can set `throwing.realistic_trajectory` to true. In this mode, `throwing.frictional_coefficient` indicates the ratio between the friction force on the arrow and its velocity. It should be negative. The acceleration of the arrow is subsequently determined by dividing the force by the "mass" of the arrow, the reference mass of 1 being the mass of the steel arrow in `throwing_arrows`. Generally, the frictional coefficient should be quite small; a value of -1 will already drastically shorten the range of the arrow. The default is -0.5.
 
 ### Initial velocity computation
 
-The mod provides three modes to compute the initial speed of an arrow: simple, strength or strengthmass.
+The mod provides three modes to compute the initial velocity of an arrow after it is shot: simple, strength and momentum.
 
-In simple mode, the initial velocity of the arrow is always the same. The `throwing.velocity_factor` contains the value of this velocity.
+In simple mode, the initial velocity of the arrow is always the same. The value of this velocity is controlled by the `throwing.velocity_factor` setting, which defaults to 19.
 
-In strength mode (the default), the initial velocity of the arrow only depends on the bow that is used---the more expensive the bow, the faster the arrow. The arrow strength is multiplied by the velocity factor to compute the speed of the arrow, an arrow strength of 1 is about the strength of the steel bow in `throwing_arrows`.
+In strength mode (the default), the initial velocity of the arrow only depends on the bow that is used---the more expensive the bow, the faster the arrow. The bow strength is multiplied by the velocity factor to compute the speed of the arrow. For reference, the steel bow in `throwing_arrows` has a strength of about 1.
 
 Finally, momentum mode is the most realistic. It computes the velocity of the arrow based on the bow strength, as in the strength mode, and on the mass of the arrow: the heavier the arrow, the slower it will be shot. It is called the momentum mode because, in this mode, the strength of a bow indicates the initial momentum of the arrow rather than its initial speed.
 
@@ -76,6 +76,7 @@ Definition: definition table, containing:
   * sound: sound to be played when the bow is used
   * delay: delay before throwing the arrow
   * no_toolranks: If true, toolranks support is disabled for this item. Defaults to false.
+  * strength: strength of the bow, see above. Defaults to 1.
 ]]
 
 -- Example:
@@ -93,6 +94,7 @@ Definition: definition table, containing:
   * tiles (essential): tiles of the arrow.
   * target (optional, defaulting to throwing.target_both): what the arrow is able to hit (throwing.target_node, throwing.target_object, throwing.target_both).
   * allow_protected (optional, defaulting to false): whether the arrow can be throw in a protected area
+  * mass (optional, defaulting to 1): the mass of the arrow (see above)
   * on_hit_sound (optional): sound played when the arrow hits a node or an object.
   * on_hit(self, pos, last_pos, node, object, hitter, data) (optional but very useful): callback function:
     - pos: the position of the hit node or object.
