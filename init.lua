@@ -110,7 +110,7 @@ local function shoot_arrow(def, toolranks_data, player, bow_index, throw_itself,
 
 	if not minetest.settings:get_bool("creative_mode") then
 		if new_stack then
-			inventory:set_stack("main", arrrow_index, new_stack)
+			inventory:set_stack("main", arrow_index, new_stack)
 		else
 			local stack = inventory:get_stack("main", arrow_index)
 			stack:take_item()
