@@ -109,13 +109,7 @@ local function shoot_arrow(def, toolranks_data, player, bow_index, throw_itself,
 	end
 
 	if not minetest.settings:get_bool("creative_mode") then
-		if new_stack then
-			inventory:set_stack("main", arrow_index, new_stack)
-		else
-			local stack = inventory:get_stack("main", arrow_index)
-			stack:take_item()
-			inventory:set_stack("main", arrow_index, stack)
-		end
+		inventory:set_stack("main", arrow_index, new_stack)
 	end
 
 	return true
@@ -203,8 +197,9 @@ function throwing.arrow_step(self, dtime)
 		if self.toolranks then
 			local inventory = player:get_inventory()
 			-- Check that the player did not move the bow
-			if inventory:get_stack("main", self.toolranks.index):get_name() == self.toolranks.itemstack:get_name() then
-				local new_itemstack = toolranks.new_afteruse(self.toolranks.itemstack, player, nil, {wear = self.toolranks.wear})
+			local current_stack = inventory:get_stack("main", self.toolranks.index)
+			if current_stack:get_name() == self.toolranks.name then
+				local new_itemstack = toolranks.new_afteruse(current_stack, player, nil, {wear = self.toolranks.wear})
 				inventory:set_stack("main", self.toolranks.index, new_itemstack)
 			end
 		end
@@ -401,12 +396,20 @@ function throwing.register_bow(name, def)
 		minetest.after(def.delay or 0, function()
 			-- Re-check that the arrow can be thrown. Overwrite the new_stack
 			local old_new_stack = new_stack
-			res, new_stack = def.allow_shot(user, user:get_inventory():get_stack("main", arrow_index), arrow_index, true)
+
+			local arrow_stack = user:get_inventory():get_stack("main", arrow_index)
+
+			res, new_stack = def.allow_shot(user, arrow_stack, arrow_index, true)
+			if not res then
+				return
+			end
+
 			if not new_stack then
 				new_stack = old_new_stack
 			end
-			if not res then
-				return
+			if not new_stack then
+				arrow_stack:take_item()
+				new_stack = arrow_stack
 			end
 
 			-- Shoot arrow
@@ -414,7 +417,7 @@ function throwing.register_bow(name, def)
 			local toolranks_data
 			if enable_toolranks then
 				toolranks_data = {
-					itemstack = itemstack,
+					name = itemstack:get_name(),
 					index = bow_index,
 					wear = uses
 				}
@@ -428,7 +431,7 @@ function throwing.register_bow(name, def)
 
 			if def.throw_itself then
 				-- This is a bug. If we return ItemStack(nil), the player punches the entity,
-				-- and if the entity if a __builtin:item, it gets back to his inventory.
+				-- and if the entity is a __builtin:item, it gets back to his inventory.
 				minetest.after(0.1, function()
 					user:get_inventory():remove_item("main", itemstack)
 				end)
