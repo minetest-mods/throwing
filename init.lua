@@ -25,7 +25,7 @@ function throwing.spawn_arrow_entity(pos, arrow, player)
 			return minetest.registered_items[arrow].throwing_entity(pos, player)
 		end
 	else
-		obj = minetest.add_entity(pos, "__builtin:item", arrow)
+		return minetest.add_entity(pos, "__builtin:item", arrow)
 	end
 end
 
@@ -130,7 +130,7 @@ function throwing.arrow_step(self, dtime)
 		minetest.log(level or "action", "[throwing] Arrow "..(self.item or self.name).." throwed by player "..self.player.." "..tostring(self.timer).."s ago "..message)
 	end
 
-	local hit = function(pos, node, obj)
+	local hit = function(pos1, node1, obj)
 		if obj then
 			if obj:is_player() then
 				if obj:get_player_name() == self.player then -- Avoid hitting the hitter
@@ -149,7 +149,7 @@ function throwing.arrow_step(self, dtime)
 				player:get_inventory():add_item("main", self.item)
 			end
 			if self.on_hit_fails then
-				self:on_hit_fails(pos, player, self.data)
+				self:on_hit_fails(pos1, player, self.data)
 			end
 		end
 
@@ -159,14 +159,14 @@ function throwing.arrow_step(self, dtime)
 			return
 		end
 
-		if node and minetest.is_protected(pos, self.player) and not self.allow_protected then -- Forbid hitting nodes in protected areas
-			minetest.record_protection_violation(pos, self.player)
+		if node1 and minetest.is_protected(pos1, self.player) and not self.allow_protected then -- Forbid hitting nodes in protected areas
+			minetest.record_protection_violation(pos1, self.player)
 			logging("hitted a node into a protected area")
 			return
 		end
 
 		if self.on_hit then
-			local ret, reason = self:on_hit(pos, self.last_pos, node, obj, player, self.data)
+			local ret, reason = self:on_hit(pos1, self.last_pos, node1, obj, player, self.data)
 			if ret == false then
 				if reason then
 					logging(": on_hit function failed for reason: "..reason)
@@ -180,17 +180,17 @@ function throwing.arrow_step(self, dtime)
 		end
 
 		if self.on_hit_sound then
-			minetest.sound_play(self.on_hit_sound, {pos = pos, gain = 0.8})
+			minetest.sound_play(self.on_hit_sound, {pos = pos1, gain = 0.8})
 		end
-		if node then
-			logging("collided with node "..node.name.." at ("..pos.x..","..pos.y..","..pos.z..")")
+		if node1 then
+			logging("collided with node "..node1.name.." at ("..pos1.x..","..pos1.y..","..pos1.z..")")
 		elseif obj then
 			if obj:get_luaentity() then
-				logging("collided with luaentity "..obj:get_luaentity().name.." at ("..pos.x..","..pos.y..","..pos.z..")")
+				logging("collided with luaentity "..obj:get_luaentity().name.." at ("..pos1.x..","..pos1.y..","..pos1.z..")")
 			elseif obj:is_player() then
-				logging("collided with player "..obj:get_player_name().." at ("..pos.x..","..pos.y..","..pos.z..")")
+				logging("collided with player "..obj:get_player_name().." at ("..pos1.x..","..pos1.y..","..pos1.z..")")
 			else
-				logging("collided with object at ("..pos.x..","..pos.y..","..pos.z..")")
+				logging("collided with object at ("..pos1.x..","..pos1.y..","..pos1.z..")")
 			end
 		end
 
