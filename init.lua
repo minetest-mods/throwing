@@ -7,6 +7,7 @@ throwing.target_node = 2
 throwing.target_both = 3
 
 throwing.modname = minetest.get_current_modname()
+local S = minetest.get_translator("throwing")
 local use_toolranks = minetest.get_modpath("toolranks") and minetest.settings:get_bool("throwing.toolranks", true)
 
 --------- Arrows functions ---------
@@ -348,6 +349,10 @@ end
 
 
 ---------- Bows -----------
+if use_toolranks and minetest.get_modpath("toolranks_extras") and toolranks_extras.register_tool_type then
+	toolranks_extras.register_tool_type("bow", S("bow"), S("Arrows thrown"))
+end
+
 function throwing.register_bow(name, def)
 	local enable_toolranks = use_toolranks and not def.no_toolranks
 
