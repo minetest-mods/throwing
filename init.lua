@@ -296,12 +296,12 @@ function throwing.register_arrow(name, def)
 		if minetest.settings:get_bool("throwing.allow_arrow_placing") and pointed_thing.above then
 			local playername = placer:get_player_name()
 			if not minetest.is_protected(pointed_thing.above, playername) then
-				minetest.log("action", "Player "..playername.." placed arrow "..name.." at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+				minetest.log("action", "Player "..playername.." placed arrow "..name.." at "..minetest.pos_to_string(pointed_thing.above))
 				minetest.set_node(pointed_thing.above, {name = name})
 				itemstack:take_item()
 				return itemstack
 			else
-				minetest.log("warning", "Player "..playername.." tried to place arrow "..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+				minetest.log("warning", "Player "..playername.." tried to place arrow "..name.." into a protected area at "..minetest.pos_to_string(pointed_thing.above))
 				minetest.record_protection_violation(pointed_thing.above, playername)
 				return itemstack
 			end
