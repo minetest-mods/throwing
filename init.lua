@@ -450,7 +450,7 @@ function throwing.register_bow(name, def)
 
 	if enable_toolranks then
 		def.original_description = def.original_description or def.description
-		def.description = toolranks.create_description(def.description, 0, 1)
+		def.description = toolranks.create_description(def.description)
 	end
 
 	minetest.register_tool(name, def)
