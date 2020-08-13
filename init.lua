@@ -182,16 +182,21 @@ function throwing.arrow_step(self, dtime)
 		if self.on_hit_sound then
 			minetest.sound_play(self.on_hit_sound, {pos = pos1, gain = 0.8})
 		end
+
+		local identifier
 		if node1 then
-			logging("collided with node "..node1.name.." at ("..pos1.x..","..pos1.y..","..pos1.z..")")
+			identifier = "node " .. node1.name
 		elseif obj then
 			if obj:get_luaentity() then
-				logging("collided with luaentity "..obj:get_luaentity().name.." at ("..pos1.x..","..pos1.y..","..pos1.z..")")
+				identifier = "luaentity " .. obj:get_luaentity().name
 			elseif obj:is_player() then
-				logging("collided with player "..obj:get_player_name().." at ("..pos1.x..","..pos1.y..","..pos1.z..")")
+				identifier = "player " .. obj:get_player_name()
 			else
-				logging("collided with object at ("..pos1.x..","..pos1.y..","..pos1.z..")")
+				identifier = "unknown object"
 			end
+		end
+		if identifier then
+			logging("collided with " .. identifier .. " at " .. minetest.pos_to_string(pos1) .. ")")
 		end
 
 		-- Toolranks support: update bow uses
