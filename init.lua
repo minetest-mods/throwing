@@ -7,6 +7,7 @@ throwing.target_node = 2
 throwing.target_both = 3
 
 throwing.modname = minetest.get_current_modname()
+local S = minetest.get_translator("throwing")
 local use_toolranks = minetest.get_modpath("toolranks") and minetest.settings:get_bool("throwing.toolranks", true)
 
 --------- Arrows functions ---------
@@ -24,7 +25,7 @@ function throwing.spawn_arrow_entity(pos, arrow, player)
 			return minetest.registered_items[arrow].throwing_entity(pos, player)
 		end
 	else
-		obj = minetest.add_entity(pos, "__builtin:item", arrow)
+		return minetest.add_entity(pos, "__builtin:item", arrow)
 	end
 end
 
@@ -129,7 +130,7 @@ function throwing.arrow_step(self, dtime)
 		minetest.log(level or "action", "[throwing] Arrow "..(self.item or self.name).." throwed by player "..self.player.." "..tostring(self.timer).."s ago "..message)
 	end
 
-	local hit = function(pos, node, obj)
+	local hit = function(pos1, node1, obj)
 		if obj then
 			if obj:is_player() then
 				if obj:get_player_name() == self.player then -- Avoid hitting the hitter
@@ -148,7 +149,7 @@ function throwing.arrow_step(self, dtime)
 				player:get_inventory():add_item("main", self.item)
 			end
 			if self.on_hit_fails then
-				self:on_hit_fails(pos, player, self.data)
+				self:on_hit_fails(pos1, player, self.data)
 			end
 		end
 
@@ -158,14 +159,14 @@ function throwing.arrow_step(self, dtime)
 			return
 		end
 
-		if node and minetest.is_protected(pos, self.player) and not self.allow_protected then -- Forbid hitting nodes in protected areas
-			minetest.record_protection_violation(pos, self.player)
+		if node1 and minetest.is_protected(pos1, self.player) and not self.allow_protected then -- Forbid hitting nodes in protected areas
+			minetest.record_protection_violation(pos1, self.player)
 			logging("hitted a node into a protected area")
 			return
 		end
 
 		if self.on_hit then
-			local ret, reason = self:on_hit(pos, self.last_pos, node, obj, player, self.data)
+			local ret, reason = self:on_hit(pos1, self.last_pos, node1, obj, player, self.data)
 			if ret == false then
 				if reason then
 					logging(": on_hit function failed for reason: "..reason)
@@ -179,18 +180,23 @@ function throwing.arrow_step(self, dtime)
 		end
 
 		if self.on_hit_sound then
-			minetest.sound_play(self.on_hit_sound, {pos = pos, gain = 0.8})
+			minetest.sound_play(self.on_hit_sound, {pos = pos1, gain = 0.8})
 		end
-		if node then
-			logging("collided with node "..node.name.." at ("..pos.x..","..pos.y..","..pos.z..")")
+
+		local identifier
+		if node1 then
+			identifier = "node " .. node1.name
 		elseif obj then
 			if obj:get_luaentity() then
-				logging("collided with luaentity "..obj:get_luaentity().name.." at ("..pos.x..","..pos.y..","..pos.z..")")
+				identifier = "luaentity " .. obj:get_luaentity().name
 			elseif obj:is_player() then
-				logging("collided with player "..obj:get_player_name().." at ("..pos.x..","..pos.y..","..pos.z..")")
+				identifier = "player " .. obj:get_player_name()
 			else
-				logging("collided with object at ("..pos.x..","..pos.y..","..pos.z..")")
+				identifier = "unknown object"
 			end
+		end
+		if identifier then
+			logging("collided with " .. identifier .. " at " .. minetest.pos_to_string(pos1) .. ")")
 		end
 
 		-- Toolranks support: update bow uses
@@ -290,12 +296,12 @@ function throwing.register_arrow(name, def)
 		if minetest.settings:get_bool("throwing.allow_arrow_placing") and pointed_thing.above then
 			local playername = placer:get_player_name()
 			if not minetest.is_protected(pointed_thing.above, playername) then
-				minetest.log("action", "Player "..playername.." placed arrow "..name.." at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+				minetest.log("action", "Player "..playername.." placed arrow "..name.." at "..minetest.pos_to_string(pointed_thing.above))
 				minetest.set_node(pointed_thing.above, {name = name})
 				itemstack:take_item()
 				return itemstack
 			else
-				minetest.log("warning", "Player "..playername.." tried to place arrow "..name.." into a protected area at ("..pointed_thing.above.x..","..pointed_thing.above.y..","..pointed_thing.above.z..")")
+				minetest.log("warning", "Player "..playername.." tried to place arrow "..name.." into a protected area at "..minetest.pos_to_string(pointed_thing.above))
 				minetest.record_protection_violation(pointed_thing.above, playername)
 				return itemstack
 			end
@@ -348,6 +354,10 @@ end
 
 
 ---------- Bows -----------
+if use_toolranks and minetest.get_modpath("toolranks_extras") and toolranks_extras.register_tool_type then
+	toolranks_extras.register_tool_type("bow", S("bow"), S("Arrows thrown"))
+end
+
 function throwing.register_bow(name, def)
 	local enable_toolranks = use_toolranks and not def.no_toolranks
 
@@ -445,7 +455,7 @@ function throwing.register_bow(name, def)
 
 	if enable_toolranks then
 		def.original_description = def.original_description or def.description
-		def.description = toolranks.create_description(def.description, 0, 1)
+		def.description = toolranks.create_description(def.description)
 	end
 
 	minetest.register_tool(name, def)
