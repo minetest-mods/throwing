@@ -10,6 +10,12 @@ throwing.modname = minetest.get_current_modname()
 local S = minetest.get_translator("throwing")
 local use_toolranks = minetest.get_modpath("toolranks") and minetest.settings:get_bool("throwing.toolranks", true)
 
+local VERTICAL_ACCELERATION = tonumber(core.settings:get("throwing.vertical_acceleration")) or -10
+local VELOCITY_FACTOR       = tonumber(core.settings:get("throwing.velocity_factor")) or 19
+local VELOCITY_MODE         = core.settings:get("throwing.velocity_mode") or "strength"
+local FRICTION_COEFF        = tonumber(core.settings:get("throwing.frictional_coefficient")) or -3
+
+
 --------- Arrows functions ---------
 function throwing.is_arrow(itemstack)
 	return throwing.arrows[ItemStack(itemstack):get_name()]
@@ -17,16 +23,19 @@ end
 
 function throwing.spawn_arrow_entity(pos, arrow, player)
 	if throwing.is_arrow(arrow) then
-		return minetest.add_entity(pos, arrow.."_entity")
-	elseif minetest.registered_items[arrow].throwing_entity then
-		if type(minetest.registered_items[arrow].throwing_entity) == "string" then
-			return minetest.add_entity(pos, minetest.registered_items[arrow].throwing_entity)
-		else -- Type is a function
-			return minetest.registered_items[arrow].throwing_entity(pos, player)
-		end
-	else
-		return minetest.add_entity(pos, "__builtin:item", arrow)
+		return core.add_entity(pos, arrow.."_entity")
 	end
+
+	local throwing_entity = core.registered_items[arrow].throwing_entity
+	if throwing_entity then
+		if type(throwing_entity) == "string" then
+			return core.add_entity(pos, throwing_entity)
+		else -- Type is a function
+			return throwing_entity(pos, player)
+		end
+	end
+
+	return core.add_entity(pos, "__builtin:item", arrow)
 end
 
 local function apply_realistic_acceleration(obj, mass)
@@ -34,14 +43,11 @@ local function apply_realistic_acceleration(obj, mass)
 		return
 	end
 
-	local vertical_acceleration = tonumber(minetest.settings:get("throwing.vertical_acceleration")) or -10
-	local friction_coef = tonumber(minetest.settings:get("throwing.frictional_coefficient")) or -3
-
 	local velocity = obj:get_velocity()
 	obj:set_acceleration({
-		x = friction_coef * velocity.x / mass,
-		y = friction_coef * velocity.y / mass + vertical_acceleration,
-		z = friction_coef * velocity.z / mass
+		x = FRICTION_COEFF * velocity.x / mass,
+		y = FRICTION_COEFF * velocity.y / mass + VERTICAL_ACCELERATION,
+		z = FRICTION_COEFF * velocity.z / mass
 	})
 end
 
@@ -82,17 +88,14 @@ local function shoot_arrow(def, toolranks_data, player, bow_index, throw_itself,
 	end
 
 	local dir = player:get_look_dir()
-	local vertical_acceleration = tonumber(minetest.settings:get("throwing.vertical_acceleration")) or -10
-	local velocity_factor = tonumber(minetest.settings:get("throwing.velocity_factor")) or 19
-	local velocity_mode = minetest.settings:get("throwing.velocity_mode") or "strength"
 
 	local velocity
-	if velocity_mode == "simple" then
-		velocity = velocity_factor
-	elseif velocity_mode == "momentum" then
-		velocity = def.strength * velocity_factor / luaentity.mass
+	if VELOCITY_MODE == "simple" then
+		velocity = VELOCITY_FACTOR
+	elseif VELOCITY_MODE == "momentum" then
+		velocity = def.strength * VELOCITY_FACTOR / luaentity.mass
 	else
-		velocity = def.strength * velocity_factor
+		velocity = def.strength * VELOCITY_FACTOR
 	end
 
 	obj:set_velocity({
@@ -100,7 +103,7 @@ local function shoot_arrow(def, toolranks_data, player, bow_index, throw_itself,
 		y = dir.y * velocity,
 		z = dir.z * velocity
 	})
-	obj:set_acceleration({x = 0, y = vertical_acceleration, z = 0})
+	obj:set_acceleration({x = 0, y = VERTICAL_ACCELERATION, z = 0})
 	obj:set_yaw(player:get_look_horizontal()-math.pi/2)
 
 	apply_realistic_acceleration(obj, luaentity.mass)
@@ -127,7 +130,8 @@ function throwing.arrow_step(self, dtime)
 	local node = minetest.get_node(pos)
 
 	local logging = function(message, level)
-		minetest.log(level or "action", "[throwing] Arrow "..(self.item or self.name).." throwed by player "..self.player.." "..tostring(self.timer).."s ago "..message)
+		minetest.log(level or "action", "[throwing] Arrow "..(self.item or self.name)..
+			" throwed by player "..self.player.." "..tostring(self.timer).."s ago "..message)
 	end
 
 	local hit = function(pos1, node1, obj)
@@ -159,7 +163,8 @@ function throwing.arrow_step(self, dtime)
 			return
 		end
 
-		if node1 and minetest.is_protected(pos1, self.player) and not self.allow_protected then -- Forbid hitting nodes in protected areas
+		if node1 and minetest.is_protected(pos1, self.player) and not self.allow_protected then
+			-- Forbid hitting nodes in protected areas
 			minetest.record_protection_violation(pos1, self.player)
 			logging("hitted a node into a protected area")
 			return
@@ -216,7 +221,8 @@ function throwing.arrow_step(self, dtime)
 		self.object:remove()
 		logging("reached ignore. Removing.")
 		return
-	elseif (minetest.registered_items[node.name] or {}).drawtype ~= "airlike" then
+	end
+	if (minetest.registered_items[node.name] or {}).drawtype ~= "airlike" then
 		if self.target ~= throwing.target_object then -- throwing.target_both, nil, throwing.target_node, or any invalid value
 			if hit(pos, node, nil) ~= false then
 				self.object:remove()
@@ -231,7 +237,8 @@ function throwing.arrow_step(self, dtime)
 	local objs = minetest.get_objects_inside_radius(pos, 1)
 	for k, obj in pairs(objs) do
 		if obj:get_luaentity() then
-			if obj:get_luaentity().name ~= self.name and obj:get_luaentity().name ~= "__builtin:item" then
+			local obj_name = obj:get_luaentity().name
+			if obj_name ~= self.name and obj_name ~= "__builtin:item" then
 				if self.target ~= throwing.target_node then -- throwing.target_both, nil, throwing.target_object, or any invalid value
 					if hit(pos, nil, obj) ~= false then
 						self.object:remove()
@@ -249,11 +256,6 @@ function throwing.arrow_step(self, dtime)
 				self.object:remove()
 			end
 		end
-	end
-
-	-- Support for shining items using wielded light
-	if minetest.global_exists("wielded_light") and self.object then
-		wielded_light.update_light_by_item(self.item, self.object:get_pos())
 	end
 
 	apply_realistic_acceleration(self.object, self.mass) -- Physics: air friction
@@ -296,12 +298,14 @@ function throwing.register_arrow(name, def)
 		if minetest.settings:get_bool("throwing.allow_arrow_placing") and pointed_thing.above then
 			local playername = placer:get_player_name()
 			if not minetest.is_protected(pointed_thing.above, playername) then
-				minetest.log("action", "Player "..playername.." placed arrow "..name.." at "..minetest.pos_to_string(pointed_thing.above))
+				minetest.log("action", "Player "..playername.." placed arrow "
+					..name.." at "..minetest.pos_to_string(pointed_thing.above))
 				minetest.set_node(pointed_thing.above, {name = name})
 				itemstack:take_item()
 				return itemstack
 			else
-				minetest.log("warning", "Player "..playername.." tried to place arrow "..name.." into a protected area at "..minetest.pos_to_string(pointed_thing.above))
+				minetest.log("warning", "Player "..playername.." tried to place arrow "
+					..name.." into a protected area at "..minetest.pos_to_string(pointed_thing.above))
 				minetest.record_protection_violation(pointed_thing.above, playername)
 				return itemstack
 			end
@@ -334,11 +338,13 @@ function throwing.register_arrow(name, def)
 	minetest.register_node(registration_name, def)
 
 	minetest.register_entity(registration_name.."_entity", {
-		physical = false,
-		visual = "wielditem",
-		visual_size = {x = 0.125, y = 0.125},
-		textures = {name},
-		collisionbox = {0, 0, 0, 0, 0, 0},
+		initial_properties = {
+			physical = false,
+			visual = "wielditem",
+			visual_size = {x = 0.125, y = 0.125},
+			wield_item = name,
+			collisionbox = {0, 0, 0, 0, 0, 0},
+		},
 		on_hit = def.on_hit,
 		on_hit_sound = def.on_hit_sound,
 		on_throw_sound = def.on_throw_sound,
@@ -346,6 +352,13 @@ function throwing.register_arrow(name, def)
 		allow_protected = def.allow_protected,
 		target = def.target,
 		on_hit_fails = def.on_hit_fails,
+		on_activate = function(self, staticdata, dtime_s)
+			print(name)
+			-- Support for shining items using wielded light
+			if core.global_exists("wielded_light") and self.object then
+				wielded_light.track_item_entity(self.object, "throwing_arrows", name)
+			end
+		end,
 		on_step = throwing.arrow_step,
 		item = name,
 		mass = def.mass or 1,
